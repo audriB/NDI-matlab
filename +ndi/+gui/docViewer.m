@@ -1,3 +1,12 @@
+% a) TODO: Can one include a static text field above the table to use as a label? 
+%    Needs a method to set that label.
+% b) TODO: It needs a delete method that closes the associated figure 
+%    (I added a parameter fig to keep track of the figure so one can find it again and operate on the right figure). 
+%    The method should also call the parent delete function (for handle) as the last step.
+% c) TODO: Can you add a remove_docs method ? We need to be able to remove the current docs if we want to add a new set.
+% d) Ready for review: Can you add help for all methods? In particular, can you explain what each method operates on 
+%    (whether it operates on the View, the TableData, etc).
+
 classdef docViewer < handle
     
     properties
@@ -15,7 +24,7 @@ classdef docViewer < handle
     
     methods
         function obj = docViewer()
-            % table2list 
+        % Initializes a new doc viewer GUI
 
 		obj.fig = figure('name','Document Viewer','NumberTitle','off');
             obj.table = uitable('units', 'normalized', 'Position', [2/36 2/24 20/36 18/24], ...
@@ -49,8 +58,14 @@ classdef docViewer < handle
         end
         
         function addDoc(obj,docs)
-		% SDV: needs documentation
-
+		% Load a list of docs from a mat file, each doc should be stored as
+		% a cell in a cell array
+        % 
+        % Input: docs, a cell array
+        % Usage: 
+        %    newDocVier = docViewer();
+        %    docs = load('SomeDocuments.mat');
+        %    newDocVier.addDoc(docs.documents);
 
             for i=1:numel(docs)
                 d = docs{i}.document_properties.ndi_document;
@@ -66,6 +81,8 @@ classdef docViewer < handle
 	% SDV: needs clearDoc() function to clear the table
         
         function details(obj, ~, event)
+        % Displays the detail of a document when the user clicks on the cell
+        
             if ~isempty(event.Indices)
                 id = obj.table.Data(event.Indices(1),:);
                 % add jsonDetails to id
@@ -93,6 +110,14 @@ classdef docViewer < handle
         end
         
         function filter(obj, ~, ~)
+        % Filter out docs that satisfies given conditions
+        % This method is called when 'Search by filter' button is clicked, 
+        % the user should also select a field name, a filter option and put
+        % in a search string
+        % obj.search(1): field name {'Select' 'Name' 'ID' 'Type' 'Date' 'Other'}
+        % obj.search(2): filter options {'Filter options' 'contains' 'begins with' 'ends with'}
+        % obj.search(3): search string that the user enters
+        
             if (obj.search(1).Value == 1 || obj.search(2).Value == 1) && obj.search(1).Value <= 5
                 msgbox(["Please choose a column name and condition to search."]);
                 return
@@ -138,6 +163,13 @@ classdef docViewer < handle
         end
         
         function filterHelper(obj, search1, search2, searchStr)
+        % Helper for filter in case the filter function needs to be called from another class
+        %
+        % Usage: ndi.gui.docViewer.filterHelper(search1, search2, searchStr)
+        % search1, search2 and searchStr should be three strings
+        % corresponding to field obj.search(1), obj.search(2), and
+        % obj.search(3) in method filter above
+            
             obj.search(1).Value = search1;
             obj.search(2).Value = search2;
             obj.search(3).String = searchStr;
@@ -145,6 +177,9 @@ classdef docViewer < handle
         end
         
         function searchID(obj, list_ID)
+        % Search for documents given a list of IDs
+        % list_ID: a string array containing IDs 
+        
             obj.search(1).Value = 3;
             obj.search(2).Value = 2;
             obj.tempTable = {};
@@ -163,6 +198,12 @@ classdef docViewer < handle
         end
         
         function contentSearch(obj, fieldValue, data)
+        % Advanced searching method, allows the user to search with
+        % specific field and field value (so that the user is not limited 
+        % to provided fields: 'Name' 'ID' 'Type' 'Date')
+        % Helper method for filter(), this method is called when user
+        % selects 'Other' for field
+        
             prompt = {'Field name:'};
             dlgtitle = 'Advanced search';
             dims = [1 50];
@@ -188,6 +229,10 @@ classdef docViewer < handle
         end
                 
         function searchFieldName(obj, ~, ~, fieldName)
+        % Filter docs that contains a specific field without requiring any
+        % contents for that field
+        % This method is called when 'Search by field name' button is clicked
+        
             if nargin < 4
                 prompt = {'Field name:'};
                 dlgtitle = 'Search field name';
@@ -215,15 +260,20 @@ classdef docViewer < handle
         end
         
         function clearView(obj, ~, ~)
+        % Clears data of current display, full table is still stored in
+        % field obj.fullTable
+        % This method is called when 'Clear table' button is clicked
             obj.table.Data = {};
         end
         
         function restore(obj, ~, ~)
-		% SDV: needs documentation; are we restoring the view or the underlying data?
+		% Restore view back to full table
+        % This method is called when 'Restore' button is clicked
             obj.table.Data = obj.fullTable;
         end
         
         function graph(obj, ~, ~, ind)
+        % Load and show graph data from a doc
             s = [];
             t = [];
             for i = 1:numel(obj.fullDocuments)
@@ -255,6 +305,7 @@ classdef docViewer < handle
         end
         
         function subgraph(obj, ~, ~, ind)
+        % Load and show subgraph data from a doc
             s = [];
             t = [];
             for i = 1:numel(obj.fullDocuments)

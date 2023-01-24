@@ -1,6 +1,10 @@
-% TODO
-% 1. Get a calculation type list
-% 2. Pipeline edit & run button (edit: ndi.calculator.graphical_edit_calculator, waiting for updates)
+% a) TODO: Make the window only about half its height by shrinking the height of the list of calculators
+% b) TODO: Make the list a uitable with the following entries: calculator, I, and O 
+%    (I is short for number of inputs, O is short for number of outputs). 
+%    Initially you can leave the I and O blank. Add a new button called refresh that will run 
+%    code to count the number of input and output documents for the calculator (I can fill in that code).
+% c) TODO: Move the buttons that operate on the pipelines to be just below the popup menu for the pipelines (see drawing)
+% d) TODO: Move the buttons that operate on calculators to the bottom of the former list/ uitable
 
 classdef pipeline
 
