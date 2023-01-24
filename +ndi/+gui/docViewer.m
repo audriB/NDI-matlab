@@ -3,7 +3,7 @@
 % b) TODO: It needs a delete method that closes the associated figure 
 %    (I added a parameter fig to keep track of the figure so one can find it again and operate on the right figure). 
 %    The method should also call the parent delete function (for handle) as the last step.
-% c) TODO: Can you add a remove_docs method ? We need to be able to remove the current docs if we want to add a new set.
+% c) Ready for review: Can you add a remove_docs method ? We need to be able to remove the current docs if we want to add a new set.
 % d) Ready for review: Can you add help for all methods? In particular, can you explain what each method operates on 
 %    (whether it operates on the View, the TableData, etc).
 
@@ -54,7 +54,10 @@ classdef docViewer < handle
                                     'BackgroundColor', [0.9 0.9 0.9], 'Callback', @obj.clearView)...
                           uicontrol('units', 'normalized', 'Style', 'pushbutton', ...
                                     'Position', [16/36 21/24 4/36 1/24], 'String', 'Restore', ...
-                                    'BackgroundColor', [0.9 0.9 0.9], 'Callback', @obj.restore)];
+                                    'BackgroundColor', [0.9 0.9 0.9], 'Callback', @obj.restore)...
+                          uicontrol('units', 'normalized', 'Style', 'pushbutton', ...
+                                    'Position', [16/36 22/24 4/36 1/24], 'String', 'Remove docs', ...
+                                    'BackgroundColor', [0.9 0.9 0.9], 'Callback', @obj.removeDocs)];
         end
         
         function addDoc(obj,docs)
@@ -78,7 +81,22 @@ classdef docViewer < handle
             obj.docs = docs;
         end
 
-	% SDV: needs clearDoc() function to clear the table
+        function removeDocs(obj, ~, ~)
+        % Remove loaded docs from current docViewer, this will clear the view AND remove the docs 
+        % (method clear will only clear the view)
+        % If the user clears table, they can use the restore button to restore the table,
+        % but if the user removes docs, they cannot restore table
+        
+            removeAns = questdlg({'Are you sure you want to remove all documents? ',
+                                'This will remove all documents from docViewer and you need to reload to see them again.',
+                                'If you want to keep the documents while clearing the view, please use the Clear table button.'}, ...
+                                'Remove all documents', ...
+                                'No, go back', 'Yes, remove all', 'Yes, remove all');
+            if strcmp(removeAns,'Yes, remove all')
+                obj.fullTable = {};
+                obj.table.Data = {};
+            end
+        end
         
         function details(obj, ~, event)
         % Displays the detail of a document when the user clicks on the cell
