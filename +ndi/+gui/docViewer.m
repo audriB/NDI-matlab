@@ -1,6 +1,8 @@
-% a) TODO: Can one include a static text field above the table to use as a label? 
+% a) TODO: Add a function to show where this gui is opened by adding a
+%    static label.
+%    Can one include a static text field above the table to use as a label? 
 %    Needs a method to set that label.
-% b) TODO: It needs a delete method that closes the associated figure 
+% b) Ready for review: Add a method to close the GUI. It needs a delete method that closes the associated figure 
 %    (I added a parameter fig to keep track of the figure so one can find it again and operate on the right figure). 
 %    The method should also call the parent delete function (for handle) as the last step.
 % c) Ready for review: Can you add a remove_docs method ? We need to be able to remove the current docs if we want to add a new set.
@@ -60,15 +62,25 @@ classdef docViewer < handle
                                     'BackgroundColor', [0.9 0.9 0.9], 'Callback', @obj.removeDocs)];
         end
         
+        function closeGUI(obj)
+        % Close current doc viewer GUI
+        % Input: obj
+        % Usage:
+        %   (First you should create a gui like this: newDocViewer = docViewer();)
+        %   newDocViewer.closeGUI(); % Should close this current gui newDocViewer
+           
+            close(obj.fig);
+        end
+        
         function addDoc(obj,docs)
 		% Load a list of docs from a mat file, each doc should be stored as
 		% a cell in a cell array
         % 
         % Input: docs, a cell array
         % Usage: 
-        %    newDocVier = docViewer();
+        %    newDocViewer = docViewer();
         %    docs = load('SomeDocuments.mat');
-        %    newDocVier.addDoc(docs.documents);
+        %    newDocViewer.addDoc(docs.documents);
 
             for i=1:numel(docs)
                 d = docs{i}.document_properties.ndi_document;
