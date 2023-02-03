@@ -1,13 +1,7 @@
-% a) TODO: Add a function to show where this gui is opened by adding a
-%    static label.
-%    Can one include a static text field above the table to use as a label? 
-%    Needs a method to set that label.
-% b) Ready for review: Add a method to close the GUI. It needs a delete method that closes the associated figure 
-%    (I added a parameter fig to keep track of the figure so one can find it again and operate on the right figure). 
-%    The method should also call the parent delete function (for handle) as the last step.
-% c) Ready for review: Can you add a remove_docs method ? We need to be able to remove the current docs if we want to add a new set.
-% d) Ready for review: Can you add help for all methods? In particular, can you explain what each method operates on 
-%    (whether it operates on the View, the TableData, etc).
+% a) Ready for review (function setLabel): Add a function to show where this gui is opened
+% b) Ready for review (function closeGUI): Add a method to close the GUI (and clear table, and remove docs in this method)
+% c) Ready for review (function removeDocs): Add a removeDocs method
+% d) Ready for review: Add help for all method
 
 classdef docViewer < handle
     
@@ -20,15 +14,22 @@ classdef docViewer < handle
         table; % left table
         panel; % right panel
         info; % data for function details
-        docs; % original docs file (SDV q: file or variable?)
+        docs; % original docs file (file as a variable stored in mat format)
+        source = 'New Doc Viewer'; % where is this gui opened, defualt = 'New Doc Viewer'
 	fig; % figure handle
     end
     
     methods
-        function obj = docViewer()
+        function obj = docViewer(source)
         % Initializes a new doc viewer GUI
+            if exist('source','var')
+                obj.source = source; % set source to where it is opened
+            end
 
-		obj.fig = figure('name','Document Viewer','NumberTitle','off');
+            obj.fig = figure('name','Document Viewer','NumberTitle','off');
+        
+            obj.setLabel(obj.source);
+        
             obj.table = uitable('units', 'normalized', 'Position', [2/36 2/24 20/36 18/24], ...
                                 'ColumnName', {'Name'; 'ID'; 'Type'; 'Date'}, ...
                                 'ColumnWidth', {100, 100, 100, 100}, ...
@@ -67,9 +68,18 @@ classdef docViewer < handle
         % Input: obj
         % Usage:
         %   (First you should create a gui like this: newDocViewer = docViewer();)
-        %   newDocViewer.closeGUI(); % Should close this current gui newDocViewer
-           
-            close(obj.fig);
+        %   newDocViewer.closeGUI(); % Should close this current gui newDocViewer 
+            obj.fullTable = {}; % Clear table
+            obj.table.Data = {}; % Remove data
+            close(obj.fig); % Close GUI
+        end
+        
+        function setLabel(~, source)
+        % Set obj.source so that the user knows where this gui is opened
+        % Usage: 
+        %   newDocViewer = docViewer();
+        %   newDocViewer.setLabel('New Label')
+            uicontrol('units', 'normalized','Style','text','String',source,'FontSize',11,'Position',[2/36 22/24 12/36 2/24]);
         end
         
         function addDoc(obj,docs)
