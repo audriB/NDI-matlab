@@ -67,7 +67,7 @@ classdef docViewer < handle
         % Close current doc viewer GUI
         % Input: obj
         % Usage:
-        %   (First you should create a gui like this: newDocViewer = docViewer();)
+        %   (First you should create a gui like this: newDocViewer = ndi.gui.docViewer();)
         %   newDocViewer.closeGUI(); % Should close this current gui newDocViewer 
             obj.fullTable = {}; % Clear table
             obj.table.Data = {}; % Remove data
@@ -77,7 +77,7 @@ classdef docViewer < handle
         function setLabel(~, source)
         % Set obj.source so that the user knows where this gui is opened
         % Usage: 
-        %   newDocViewer = docViewer();
+        %   newDocViewer = ndi.gui.docViewer();
         %   newDocViewer.setLabel('New Label')
             uicontrol('units', 'normalized','Style','text','String',source,'FontSize',11,'Position',[2/36 22/24 12/36 2/24]);
         end
@@ -88,7 +88,7 @@ classdef docViewer < handle
         % 
         % Input: docs, a cell array
         % Usage: 
-        %    newDocViewer = docViewer();
+        %    newDocViewer = ndi.gui.docViewer();
         %    docs = load('SomeDocuments.mat');
         %    newDocViewer.addDoc(docs.documents);
 
