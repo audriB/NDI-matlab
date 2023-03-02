@@ -1,10 +1,11 @@
-% a) TODO: Make the window only about half its height by shrinking the height of the list of calculators
+% a) Ready for review: Make the window only about half its height by shrinking the height of the list of calculators
 % b) TODO: Make the list a uitable with the following entries: calculator, I, and O 
 %    (I is short for number of inputs, O is short for number of outputs). 
 %    Initially you can leave the I and O blank. Add a new button called refresh that will run 
 %    code to count the number of input and output documents for the calculator (I can fill in that code).
-% c) TODO: Move the buttons that operate on the pipelines to be just below the popup menu for the pipelines (see drawing)
-% d) TODO: Move the buttons that operate on calculators to the bottom of the former list/ uitable
+% Problem: Cell selection
+% c) Ready for review: Move the buttons that operate on the pipelines to be just below the popup menu for the pipelines (see drawing)
+% d) Ready for review: Move the buttons that operate on calculators to the bottom of the former list/ uitable
 
 classdef pipeline
 
@@ -19,8 +20,7 @@ classdef pipeline
 
 		end % properties
     
-		methods
-		
+        methods
 		end % methods
     
 		methods (Static)
@@ -43,6 +43,7 @@ classdef pipeline
 			
 					window_params.height = 500;
 					window_params.width = 400;
+                    
 					fig = []; % figure to use
 
 					if strcmpi(command,'new'), 
@@ -86,54 +87,77 @@ classdef pipeline
 							callbackstr = [  'eval([get(gcbf,''Tag'') ''(''''command'''','''''' get(gcbo,''Tag'') '''''' ,''''fig'''',gcbf);'']);']; 
 
 							% Step 1: Establish window geometry
-
-							top = window_params.height;
-							right = window_params.width;
-							row = 25;
-							title_height = 25;
-							title_width = 200;
-							edge = 5;
-
-							doc_width = (right - 2*edge)/3*2;
-							doc_height = (window_params.height)/4*3;
-							menu_width = right - 2*edge;
+                            
+							top = 1; % 1 is 100% in normalized unit
+							right = 1; % 1 is 100% in normalized unit
+							row = top/20; % 20 rows
+							edge = right/40; % 1/40 edge on each side
+                            x = edge; % real x for uicontrol, because we need to leave an edge
+                            y = top-edge; % real y for uicontrol, because we need to leave an edge
+                            
+                            title_height = row;
+							title_width = right-2*edge;
+                            
+							doc_width = right-2*edge;
+							doc_height = 7*row;
+                            doc_column_width = {200, 75, 75};
+                            
+							menu_width = right-2*edge;
 							menu_height = title_height;
-							button_width = 120;
-							button_height = 25;
-							button_y = [400-2*row 400-4.5*row 400-6*row 400-8.5*row 400-10*row 400-11.5*row];
-							button_center = right-(right-doc_width)/2;
+                            
+							button_width = right/4;
+							button_height = row;
+                            
+                            pipeline_buttons_txt = y-13*row;
+                            pipeline_buttons_x = [edge right/2-1/2*button_width (right-button_width-edge)];
+                            pipeline_buttons_y = y-14*row;
+                            
+                            calculator_buttons_txt = y-16*row;
+                            calculator_buttons_x = [edge right/2-1/2*button_width (right-button_width-edge)];
+                            calculator_buttons_y = y-17*row;
 
 							% Step 2 now build it
 						
-							set(fig,'position',[50 50 right top]);
+							set(fig,'position',[50 50 window_params.width window_params.height]);
 							set(fig,'NumberTitle','off');
 							set(fig,'Name',['Editing ' ud.pipelinePath]);
 				    
 							% Pipeline selection portion of window
-							x = edge; y = top-row;
-							uicontrol(uid.txt,'position',[x y title_width title_height],'string','Select pipeline:','tag','PipelineTitleTxt');
-							uicontrol(uid.popup,'position',[x y-title_height menu_width menu_height],...
+							uicontrol(uid.txt,'units','normalized','position',[x y-title_height title_width title_height],'string','Select pipeline:','tag','PipelineTitleTxt');
+							uicontrol(uid.popup,'units','normalized','position',[x y-2*title_height menu_width menu_height],...
 								'string',ud.pipelineListChar,'tag','PipelinePopup','callback',callbackstr);
-							y = y - doc_height;
-				
-							uicontrol(uid.edit,'style','listbox','position',[x y-2*title_height doc_width doc_height],...
-								'string',{'Please select or create a pipeline.'},...
-								'tag','PipelineContentList','min',0,'max',2,'callback',callbackstr); 
-				
-							uicontrol(uid.button,'position',[button_center-0.5*button_width button_y(1) button_width button_height],...
-								'string','->','tag','RunBt','callback',callbackstr,'Tooltipstring','Run pipeline calculations in order');
-							uicontrol(uid.button,'position',[button_center-0.5*button_width button_y(2) button_width button_height],...
+                            
+                            % Pipeline menu portion
+                            uicontrol(uid.txt,'units','normalized','position',[x y-4*title_height title_width title_height],'string','Pipeline menu:','tag','PipelineMenuTxt');
+                            %uicontrol(uid.edit,'units', 'normalized', 'style','listbox','position',[x y-4*title_height-doc_height doc_width doc_height],...
+							%	'string',{'Please select or create a pipeline.'},...
+							%	'tag','PipelineContentList','min',0,'max',2,'callback',callbackstr); 
+                            uitable('units', 'normalized', 'position',[x y-4*title_height-doc_height doc_width doc_height],...
+                                'ColumnName', {'Calculator'; 'I'; 'O'}, ...
+                                'ColumnWidth', doc_column_width, ...
+                                'Data', {}, ...
+                                'tag','PipelineContentList',...
+                                'CellSelectionCallback', @getCellValue);
+                            
+                            % Pipeline operation buttons portion
+                            uicontrol(uid.txt,'units','normalized','position',[x pipeline_buttons_txt title_width title_height],'string','Pipeline operations:','tag','PipelineOpeTxt');
+							uicontrol(uid.button,'units', 'normalized', 'position',[pipeline_buttons_x(1) pipeline_buttons_y button_width button_height],...
 								'string','+','tag','NewPipelineBt','Tooltipstring','Create new pipeline',...
 								'callback',callbackstr);
-							uicontrol(uid.button,'position',[button_center-0.5*button_width button_y(3) button_width button_height],...
+							uicontrol(uid.button,'units','normalized','position',[pipeline_buttons_x(2) pipeline_buttons_y button_width button_height],...
 								'string','-','Tooltipstring','Delete Current Pipeline','tag','DltPipelineBt',...
 								'callback',callbackstr);
-							uicontrol(uid.button,'position',[button_center-0.5*button_width button_y(4) button_width button_height],...
+                            uicontrol(uid.button,'units','normalized','position',[pipeline_buttons_x(3) pipeline_buttons_y button_width button_height],...
+								'string','->','tag','RunBt','callback',callbackstr,'Tooltipstring','Run pipeline calculations in order');
+                            
+                            % Calculator operation buttons portion
+                            uicontrol(uid.txt,'units','normalized','position',[x calculator_buttons_txt title_width title_height],'string','Calculator operations:','tag','CalculatorOpeTxt');
+							uicontrol(uid.button,'units','normalized','position',[calculator_buttons_x(1) calculator_buttons_y button_width button_height],...
 								'string','+','Tooltipstring','Create New Calculator','tag','NewCalcBt',...
 								'callback',callbackstr);
-							uicontrol(uid.button,'position',[button_center-0.5*button_width button_y(5) button_width button_height],...
+							uicontrol(uid.button,'units','normalized','position',[calculator_buttons_x(2) calculator_buttons_y button_width button_height],...
 								'string','-','Tooltipstring','Delete Current Calculator','tag','DltCalcBt','callback',callbackstr);
-							uicontrol(uid.button,'position',[button_center-0.5*button_width button_y(6) button_width button_height],...
+							uicontrol(uid.button,'units','normalized','position',[calculator_buttons_x(3) calculator_buttons_y button_width button_height],...
 								'string','Edit','tooltipstring','Edit selected calculator','tag','EditBt','callback',callbackstr);
 							ndi.pipeline.edit('command','LoadPipelines'); % load the pipelines from disk
 				
@@ -155,19 +179,22 @@ classdef pipeline
 							set(pipelinePopupObj, 'string',ud.pipelineListChar,'Value',index);
 							pipelineContentObj = findobj(fig,'tag','PipelineContentList');
 							if index == 1
-								set(pipelineContentObj, 'string', [], 'Value', 1);
+								% set(pipelineContentObj, 'string', [], 'Value', 1);
+                                set(pipelineContentObj, 'Data', {});
 							else
 								calcList = ndi.pipeline.getCalcFromPipeline(ud.pipelineList, ud.pipelineListChar{index});
 								calcListChar = ndi.pipeline.calculationsToChar(calcList);
 								pipelineContentObj = findobj(fig,'tag','PipelineContentList');
-								set(pipelineContentObj, 'string', calcListChar, 'Value', min(numel(calcListChar),1));
+% 								set(pipelineContentObj, 'string', calcListChar, 'Value', min(numel(calcListChar),1));
+                                set(pipelineContentObj, 'Data', [calcListChar', repmat({''}, length(calcListChar), 2)]);
 							end
 							
 						case 'UpdateCalculatorList', % invented command that is not a callback
 							calcList = ndi.pipeline.getCalcFromPipeline(ud.pipelineList, pipeline_name);
 							calcListChar = ndi.pipeline.calculationsToChar(calcList);
 							pipelineContentObj = findobj(fig,'tag','PipelineContentList');
-							set(pipelineContentObj, 'string', calcListChar, 'Value', min(numel(calcListChar),1));
+% 							set(pipelineContentObj, 'string', calcListChar, 'Value', min(numel(calcListChar),1));
+                            set(pipelineContentObj, 'Data', [calcListChar', repmat({''}, length(calcListChar), 2)]);
 				
 						case 'PipelinePopup',
 							% Step 1: search for the objects you need to work with
@@ -178,7 +205,8 @@ classdef pipeline
 							if val == 1
 								msgbox('Please select or create a pipeline.');
 								pipelineContentObj = findobj(fig,'tag','PipelineContentList');
-								set(pipelineContentObj, 'string', [], 'Value', 1);
+% 								set(pipelineContentObj, 'string', [], 'Value', 1);
+                                set(pipelineContentObj, 'Data', {});
 								return
 							end
 							pipeline_name = str{val};
@@ -209,7 +237,7 @@ classdef pipeline
 							% check not the "---" 
 							if val == 1
 								msgbox('Please select a pipeline to delete.');
-				    return
+                                return
 							end
 							str = get(pipelinePopupObj, 'string');
 							% get dir
@@ -219,10 +247,10 @@ classdef pipeline
 							msgBox = sprintf('Do you want to delete this pipeline?');
 							title = 'Delete file';
 							b = questdlg(msgBox, title, 'Yes', 'No', 'Yes');
-							if strcmpi(b, 'Yes');
+							if strcmpi(b, 'Yes')
 								rmdir([read_dir filesep filename], 's');
-				end
-				% update and load pipelines
+                            end
+                            % update and load pipelines
 							ndi.pipeline.edit('command','LoadPipelines');
 				
 						case 'NewCalcBt',
@@ -307,7 +335,7 @@ classdef pipeline
 							% replace illegal chars to underscore
 							calc_name = regexprep(calc_name,'[^a-zA-Z0-9]','_');
 							full_calc_name = [ud.pipelinePath filesep pipeline_name filesep calc_name '.json'];
-							ndi.calculator.graphical_edit_calculator('command','EDIT','filename',full_calc_name,'session',ud.session); 
+							ndi.calculator.graphical_edit_calculator('command','EDIT','filename',full_calc_name,'session',ud.session);
 						case 'RunBt'
 							disp([command 'is not implemented yet.']);
 						case 'PipelineContentList'
@@ -318,6 +346,12 @@ classdef pipeline
 
 			end % pipeline_edit()
         
+        function getCellValue(src, evt)
+            row = evt.Indices(1);
+            col = evt.Indices(2);
+            value = src.Data{row, col};
+            disp(value);
+        end
         
 		function calcList = getCalcFromPipeline(pipelineList, pipeline_name)
 			%
