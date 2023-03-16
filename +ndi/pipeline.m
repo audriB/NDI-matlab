@@ -48,8 +48,9 @@ classdef pipeline
 
 					if strcmpi(command,'new'), 
 						if isempty(fig),
-							fig = figure;
+							fig = uifigure;
 						end;
+                        keyboard
 						command = 'NewWindow';
 						% new window, set userdata
 						if exist('pipelinePath','var'),
@@ -57,7 +58,7 @@ classdef pipeline
 							if isfolder(pipelinePath),
 								ud.pipelinePath = pipelinePath;
 								ud.pipelineList = []; % initially empty
-								ud.pipelineListChar = []; % initally empty
+								ud.pipelineListChar = []; % initially empty
 								ud.session = session;
 								set(fig,'userdata',ud);
 							else,
@@ -69,7 +70,7 @@ classdef pipeline
 					else 
 						fig = gcf;
 						% not new window, get userdata
-						ud = get(fig,'userdata');
+						ud = get(fig,'userdata'),
 					end;
 			
 					if isempty(fig),
@@ -137,7 +138,7 @@ classdef pipeline
                                 'ColumnWidth', doc_column_width, ...
                                 'Data', {}, ...
                                 'tag','PipelineContentList',...
-                                'CellSelectionCallback', @getCellValue);
+                                'CellSelectionCallback', callbackstr);
                             
                             % Pipeline operation buttons portion
                             uicontrol(uid.txt,'units','normalized','position',[x pipeline_buttons_txt title_width title_height],'string','Pipeline operations:','tag','PipelineOpeTxt');
