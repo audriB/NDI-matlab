@@ -1,8 +1,3 @@
-% a) Ready for review (function setLabel): Add a function to show where this gui is opened
-% b) Ready for review (function closeGUI): Add a method to close the GUI (and clear table, and remove docs in this method)
-% c) Ready for review (function removeDocs): Add a removeDocs method
-% d) Ready for review: Add help for all method
-
 classdef docViewer < handle
     
     properties
