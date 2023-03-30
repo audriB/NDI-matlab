@@ -1,8 +1,4 @@
-% TODO: Make the list a uitable with the following entries: calculator, I, and 
-%    (I is short for number of inputs, O is short for number of outputs). 
-%    Initially you can leave the I and O blank. Add a new button called refresh that will run 
-%    code to count the number of input and output documents for the calculator (I can fill in that code).
-% Problem: calculator editing; reload pipelines; does not resize; need to implement refresh
+% Problem: calculator editing; reload pipelines; does not resize; need to implement read IO
 
 classdef pipeline
 
@@ -346,7 +342,20 @@ classdef pipeline
 							ndi.calculator.graphical_edit_calculator('command','EDIT','filename',full_calc_name,'session',ud.session);
                         
                         case 'RefreshIOBt',
-                            disp([command ' is not implemented yet.']);
+                            % Step 1: search for the objects you need to work with
+							pipelinePopupObj = findobj(fig,'tag','PipelinePopup');
+							val = get(pipelinePopupObj, 'value');
+							str = get(pipelinePopupObj, 'string');
+							% Step 2, check not the "---" one and display
+							if val == 1
+								msgbox('Please select or create a pipeline.');
+								pipelineContentObj = findobj(fig,'tag','PipelineContentList');
+% 								set(pipelineContentObj, 'string', [], 'Value', 1);
+								set(pipelineContentObj, 'Data', {});
+								return
+							end
+							pipeline_name = str{val};
+							ndi.pipeline.edit('command','UpdateCalculatorList','pipeline_name',pipeline_name,'fig',fig); 
 
 						case 'RunBt'
 							disp([command ' is not implemented yet.']);
