@@ -163,8 +163,10 @@ classdef cache < handle
 			% NDI_CACHE_OBJ = CLEAR(NDI_CACHE_OBJ)
 			%
 			% Clears all entries from the NDI.CACHE object NDI_CACHE_OBJ.
+			% Futher clears all Memoized caches from Matlab
 			%
 				ndi_cache_obj = ndi_cache_obj.remove(1:numel(ndi_cache_obj.table),[]);
+				clearAllMemoizedCaches;
 		end % clear
 
 		function ndi_cache_obj = freebytes(ndi_cache_obj, freebytes)

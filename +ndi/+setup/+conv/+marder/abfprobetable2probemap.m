@@ -42,9 +42,11 @@ for i=1:numel(d),
 
 	for j=1:numel(h.recChNames),
 		[name,ref,probeType,subjectlist] = ndi.setup.conv.marder.channelnametable2probename(h.recChNames{j},probetable);
-		daqsysstr = ndi.daq.daqsystemstring(daqname,{'ai'},j);
-		probemap(end+1) = ndi.epoch.epochprobemap_daqsystem(name,ref,probeType,...
-			daqsysstr.devicestring(),subjectlist);
+        for k=1:numel(name),
+		    daqsysstr = ndi.daq.daqsystemstring(daqname,{'ai'},j);
+		    probemap(end+1) = ndi.epoch.epochprobemap_daqsystem(name{k},ref(k),probeType{k},...
+			    daqsysstr.devicestring(),subjectlist{k});
+        end;
 	end;
 	[myparent,myfile,myext] = fileparts([dirname filesep d(i).name]);
 	probemap.savetofile([dirname filesep myfile '.epochprobemap.txt']);

@@ -44,7 +44,7 @@ for i=1:numel(d),
 	h = ndr.format.axon.read_abf_header([dirname filesep d(i).name]);
 	[name,ref,daqsysstr,subjectlist] = ndi.setup.conv.marder.channelnames2daqsystemstrings(h.recChNames,'marder_abf',subject,...
 		'forceIgnore2',options.forceIgnore2);
-	for j=1:numel(name),
+	for j=1:numel(h.recChNames),
 		if isempty(find(strcmp(h.recChNames{j},probetable.("channelName")))),
 			if any(lower(h.recChNames{j})=='a') & any(lower(h.recChNames{j})=='v'),
 				probeType = 'sharp-Vm';

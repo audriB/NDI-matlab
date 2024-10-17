@@ -6,3 +6,10 @@ lvn_1	lateral ventricular nerve
 mvn_1	median ventricular nerve
 pdn_1	pyloric dilator nerve
 pyn_1	pyloric nerve
+dgn_2	dorsal gastric nerve
+gpn_2	gastropyloric nerve
+lgn_2	lateral gastric nerve
+lvn_2	lateral ventricular nerve
+mvn_2	median ventricular nerve
+pdn_2	pyloric dilator nerve
+pyn_2	pyloric nerve
