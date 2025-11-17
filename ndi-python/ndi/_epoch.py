@@ -264,26 +264,195 @@ class EpochSet:
 
         return epochobjectarray
 
-    def epochnodes(self) -> List[Dict[str, Any]]:
+    def epochid(self, epoch_number: Union[int, str]) -> str:
         """
-        Return epoch nodes for use in syncgraph.
+        Get the epoch identifier for a particular epoch.
+
+        Args:
+            epoch_number: Epoch number or epoch ID string
 
         Returns:
-            List of epoch node dicts with fields:
+            Epoch ID string
+
+        Raises:
+            ValueError: If epoch_number out of range or invalid
+
+        Examples:
+            >>> eid = epochset.epochid(1)
+            >>> eid2 = epochset.epochid('t00001')  # Verifies and returns same
+        """
+        et, _ = self.epochtable()
+
+        if isinstance(epoch_number, int):
+            if epoch_number >= len(et):
+                raise ValueError(f'epoch_number out of range (number of epochs=={len(et)})')
+            return et[epoch_number]['epoch_id']
+        else:
+            # Verify the epoch_id string exists
+            for epoch in et:
+                if epoch.get('epoch_id', '').lower() == epoch_number.lower():
+                    return epoch['epoch_id']  # Return with correct capitalization
+            raise ValueError('epoch_number is a string but does not correspond to any epoch_id')
+
+    def epochtableentry(self, epoch_number: Union[int, str]) -> Dict[str, Any]:
+        """
+        Return the epochtable entry for a specific epoch.
+
+        Args:
+            epoch_number: Epoch number or epoch ID
+
+        Returns:
+            Epochtable entry dict
+
+        Raises:
+            ValueError: If epoch not found
+        """
+        et, _ = self.epochtable()
+        eid = self.epochid(epoch_number)
+
+        for epoch in et:
+            if epoch.get('epoch_id', '').lower() == eid.lower():
+                return epoch
+
+        raise ValueError('epoch_number does not correspond to a valid epoch')
+
+    def epochclock(self, epoch_number: Union[int, str]) -> List[Any]:
+        """
+        Return the ClockType objects for an epoch.
+
+        Args:
+            epoch_number: Epoch number or epoch ID
+
+        Returns:
+            List of ClockType objects
+
+        Notes:
+            Base class returns [ClockType('no_time')]
+        """
+        from .time import ClockType
+        return [ClockType('no_time')]
+
+    def t0_t1(self, epoch_number: Union[int, str]) -> List[List[float]]:
+        """
+        Return the t0_t1 (beginning and end) times for an epoch.
+
+        Args:
+            epoch_number: Epoch number or epoch ID
+
+        Returns:
+            List of [t0, t1] pairs for each clock type
+
+        Notes:
+            Base class returns [[nan, nan]]
+        """
+        return [[np.nan, np.nan]]
+
+    def epoch2str(self, number: Union[int, str, List[str]]) -> str:
+        """
+        Convert an epoch number or ID to a string.
+
+        Args:
+            number: Epoch number, ID string, or list of ID strings
+
+        Returns:
+            String representation
+        """
+        if isinstance(number, int):
+            return str(number)
+        elif isinstance(number, list):
+            return ', '.join(number)
+        elif isinstance(number, str):
+            return number
+        else:
+            raise ValueError('Unknown epoch number or identifier')
+
+    def epochsetname(self) -> str:
+        """
+        Get the name of this epochset for use in epoch nodes.
+
+        Returns:
+            Object name string
+
+        Notes:
+            If the object has a 'name' attribute, returns that.
+            Otherwise returns 'unknown'.
+        """
+        if hasattr(self, 'name'):
+            return self.name
+        return 'unknown'
+
+    def epochnodes(self) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """
+        Return all epoch nodes from this epochset.
+
+        Returns:
+            Tuple of (nodes, underlyingnodes) where each is a list of
+            epoch node dicts with fields:
             - epoch_id
             - epoch_session_id
             - epochprobemap
-            - epoch_clock
-            - t0_t1
+            - epoch_clock (single ClockType, not list)
+            - t0_t1 (single [t0, t1] pair, not list)
             - underlying_epochs
             - objectname
             - objectclass
 
         Notes:
-            Subclasses should override to provide object name/class.
-            Base class returns empty list.
+            Epoch nodes differ from epochtable entries in that each
+            clock type gets its own node. This aids in graph construction.
         """
-        return []
+        et, _ = self.epochtable()
+        nodes = []
+        underlyingnodes = []
+
+        for epoch_entry in et:
+            # Create one node per clock type
+            epoch_clocks = epoch_entry.get('epoch_clock', [])
+            epoch_t0_t1 = epoch_entry.get('t0_t1', [])
+
+            for j, clock in enumerate(epoch_clocks):
+                newnode = {
+                    'epoch_id': epoch_entry.get('epoch_id', ''),
+                    'epoch_session_id': epoch_entry.get('epoch_session_id', ''),
+                    'epochprobemap': epoch_entry.get('epochprobemap'),
+                    'epoch_clock': clock,  # Single clock, not list
+                    't0_t1': epoch_t0_t1[j] if j < len(epoch_t0_t1) else [np.nan, np.nan],
+                    'underlying_epochs': epoch_entry.get('underlying_epochs', []),
+                    'objectname': self.epochsetname(),
+                    'objectclass': self.__class__.__name__
+                }
+                nodes.append(newnode)
+
+        return nodes, underlyingnodes
+
+    def issyncgraphroot(self) -> bool:
+        """
+        Should this object be a root in the syncgraph epoch graph?
+
+        Returns:
+            True if this should be a graph root, False otherwise
+
+        Notes:
+            For EpochSet objects, returns True (stop graph traversal).
+            Some subclasses (like Probe) return False to include
+            underlying DAQ system epochs.
+        """
+        return True
+
+    def matchedepochtable(self, hashvalue: Any) -> bool:
+        """
+        Compare a hash value to the current epochtable hash.
+
+        Args:
+            hashvalue: Hash value to compare
+
+        Returns:
+            True if hashes match, False otherwise
+        """
+        cached_et, cached_hash = self.cached_epochtable()
+        if cached_et is not None:
+            return hashvalue == cached_hash
+        return False
 
 
 class EpochProbeMap:

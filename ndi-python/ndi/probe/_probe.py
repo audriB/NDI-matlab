@@ -10,10 +10,10 @@ A probe is uniquely identified by: session, name, reference, and type.
 
 from typing import Optional, List, Dict, Any, Tuple, Union
 import numpy as np
-from .element import Element
-from .document import Document
-from .time import TimeReference, ClockType
-from .epoch import epochrange
+from ..element import Element
+from ..document import Document
+from ..time import TimeReference, ClockType
+from ..epoch import epochrange
 
 
 class Probe(Element):
@@ -76,14 +76,15 @@ class Probe(Element):
             subject_id = args[3] if len(args) > 3 else None
 
             # Probe is always direct and has no underlying element
+            # Element expects positional args for form 1: (session, name, reference, type, ...)
             super().__init__(
-                session=session,
-                name=name,
-                reference=reference,
-                element_type=probe_type,
-                underlying_element=None,
-                direct=True,
-                subject_id=subject_id
+                session,
+                name,
+                reference,
+                probe_type,
+                None,  # underlying_element
+                True,  # direct
+                subject_id
             )
         else:
             raise ValueError("Invalid arguments. Use Probe(session, name, ref, type, subject_id) or Probe(session, doc)")

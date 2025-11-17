@@ -5,7 +5,12 @@ This module provides concrete calculator implementations for various
 neuroscience data analysis tasks.
 """
 
-# Example calculators will be imported here as they are created
-# from .example import Simple
+from .spike_rate import SpikeRateCalculator
+from .tuning_curve import TuningCurveCalculator
+from .cross_correlation import CrossCorrelationCalculator
 
-__all__ = []
+__all__ = [
+    'SpikeRateCalculator',
+    'TuningCurveCalculator',
+    'CrossCorrelationCalculator',
+]

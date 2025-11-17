@@ -278,3 +278,61 @@ def must_be_cell_array_of_class(value: Any, required_class: type) -> None:
                     f'All elements of the list must be {required_class.__name__} objects. '
                     f'Element {i} is of class \'{type(element).__name__}\'.'
                 )
+
+
+def must_have_required_columns(table: Any, required_cols: Union[str, List[str]]) -> None:
+    """
+    Validate if a pandas DataFrame or dict contains specified columns.
+
+    Checks if the input table contains all column names listed in required_cols.
+    If any columns are missing, it throws an error.
+
+    MATLAB equivalent: ndi.validators.mustHaveRequiredColumns
+
+    Args:
+        table: The input table/DataFrame/dict to check
+        required_cols: A string or list of strings representing required column names
+
+    Raises:
+        ValueError: If any columns specified in required_cols are not found in the table
+
+    Examples:
+        >>> import pandas as pd
+        >>> df = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
+        >>> must_have_required_columns(df, ['a', 'b'])  # Valid
+        >>> must_have_required_columns(df, ['a', 'c'])  # Raises ValueError
+    """
+    # Handle pandas DataFrame
+    try:
+        import pandas as pd
+        if isinstance(table, pd.DataFrame):
+            actual_cols = set(table.columns)
+        elif isinstance(table, dict):
+            actual_cols = set(table.keys())
+        else:
+            raise TypeError(
+                'Input table must be a pandas DataFrame or dictionary.'
+            )
+    except ImportError:
+        # If pandas not available, only support dict
+        if isinstance(table, dict):
+            actual_cols = set(table.keys())
+        else:
+            raise TypeError(
+                'Input table must be a dictionary (or pandas DataFrame if pandas installed).'
+            )
+
+    # Ensure required_cols is a list
+    if isinstance(required_cols, str):
+        required_cols = [required_cols]
+    elif not isinstance(required_cols, list):
+        raise ValueError('required_cols must be a string or list of strings.')
+
+    # Check for missing columns
+    required_set = set(required_cols)
+    missing_cols = required_set - actual_cols
+
+    if missing_cols:
+        raise ValueError(
+            f'Input table is missing required column(s): {", ".join(sorted(missing_cols))}'
+        )
