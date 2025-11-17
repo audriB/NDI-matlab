@@ -1,7 +1,7 @@
 # Session Handoff - NDI Python Port
 
 **Last Updated**: November 17, 2025
-**Session End Commit**: (to be added)
+**Session End Commit**: 73d3e5e
 **Branch**: `claude/continue-ndi-python-port-01SQKZHEGNy4xZNz2DCYjrpY`
 
 ---
@@ -9,55 +9,65 @@
 ## 🎯 Current Status
 
 **Phase 1**: ✅ **100% COMPLETE**
-**Phase 2**: ✅ **100% COMPLETE** 🎉
+**Phase 2**: ✅ **100% COMPLETE**
+**Phase 3**: 🚧 **IN PROGRESS** (Week 1/6 Complete - 20%)
 
-All code is committed and ready to push to the repository.
+All code is committed and pushed to the repository.
 
 ---
 
 ## 📋 What Was Just Completed
 
-This session successfully completed **ALL remaining Phase 2 components**:
+This session successfully completed **Phase 3 Week 1: SyncRule Implementations**:
 
-### Phase 2 Database Utilities - COMPLETE ✅
+### Phase 3 Week 1: SyncRule Implementations - COMPLETE ✅
 
-**Enhanced Query Builder** (`ndi/db/fun/query_builder.py`):
-- `QueryBuilder` - Fluent interface for complex database queries
-- `QueryCache` - LRU caching for improved performance
-- `combine_queries()` - Combine multiple queries with AND/OR
-- `optimize_query()` - Query optimization and deduplication
+**Three SyncRule Subclasses**:
 
-**Metadata Management** (`ndi/db/fun/metadata_manager.py`):
-- `MetadataExtractor` - Automated metadata extraction
-- `MetadataValidator` - Metadata validation with rules
-- `MetadataSearcher` - High-level metadata-based searching
+1. **FileFind** (`ndi/time/syncrules/filefind.py`, 309 lines):
+   - Loads time mappings from external synchronization files
+   - Supports forward and reverse time mappings
+   - Formula: time_B = shift + scale * time_A
+   - Validates DAQ system matching and common files
+   - MATLAB equivalent: `ndi.time.syncrule.filefind`
 
-**Database Maintenance** (`ndi/db/fun/database_maintenance.py`):
-- `DatabaseCleaner` - Find/remove orphaned documents and files
-- `PerformanceMonitor` - Performance tracking and recommendations
-- `IndexManager` - Database index management
+2. **FileMatch** (`ndi/time/syncrules/filematch.py`, 176 lines):
+   - Matches epochs with common underlying files
+   - Returns identity mapping when sufficient files match
+   - Useful for implicitly synchronized data
+   - MATLAB equivalent: `ndi.time.syncrule.filematch`
 
-### Phase 2 App System Integration - COMPLETE ✅
+3. **CommonTriggers** (`ndi/time/syncrules/commontriggers.py`, 247 lines):
+   - Placeholder matching MATLAB stub implementation
+   - Currently behaves like FileMatch
+   - TODO: Full trigger detection and alignment
+   - MATLAB equivalent: `ndi.time.syncrule.commontriggers`
 
-**App Framework** (already existed in `ndi/app.py` and `ndi/appdoc.py`):
-- Base `App` class with version tracking
-- `AppDoc` mixin for parameter document management
-- Automatic provenance tracking (git, OS, Python version)
+**Key Features**:
+- All classes extend SyncRule base class
+- Comprehensive parameter validation with `isvalidparameters()`
+- Proper TimeMapping integration with 'linear' mode
+- Support for eligible/ineligible epochset filtering
+- Full docstrings with examples and MATLAB references
 
-**New Documentation and Examples**:
-- `ndi/example/tutorial_04_apps.py` - Complete app tutorial (4 examples)
-- Example spike extraction app
-- Example analysis app using database utilities
-- Integration patterns and best practices
+**Planning Document**:
+- `PHASE3_PLAN.md` - Comprehensive 6-week implementation plan
+- Detailed deliverables and success criteria for each week
+- Estimated timelines and testing requirements
 
 ### Comprehensive Test Suite - COMPLETE ✅
 
-**New Test Files**:
-- `tests/test_db_query_builder.py` - 34 tests (ALL PASSING ✅)
-- `tests/test_db_metadata_manager.py` - 63 tests
-- `tests/test_db_maintenance.py` - 45 tests
+**New Test File**:
+- `tests/test_syncrules.py` - 25 tests (ALL PASSING ✅)
 
-**Total**: 142 new tests written
+**Test Coverage**:
+- Object creation and initialization (6 tests)
+- Parameter validation - valid/invalid/missing (9 tests)
+- Eligible/ineligible epochsets (6 tests)
+- Sync file loading - forward/reverse mappings (2 tests)
+- Apply method with various scenarios (2 tests)
+
+**Total**: 25 new tests, 100% passing
 
 ---
 
@@ -70,7 +80,8 @@ This session successfully completed **ALL remaining Phase 2 components**:
 | Probe Tests | 10 | ✅ 100% passing |
 | Integration Tests | 8 | ✅ 100% passing |
 | Query Builder Tests | 34 | ✅ 100% passing |
-| **TOTAL PASSING** | **206+** | **✅ ~98% overall** |
+| **SyncRules Tests** | **25** | **✅ 100% passing** |
+| **TOTAL PASSING** | **231+** | **✅ ~98% overall** |
 
 ---
 
@@ -80,27 +91,23 @@ This session successfully completed **ALL remaining Phase 2 components**:
 ```
 ndi-python/
 ├── ndi/
-│   ├── db/
-│   │   └── fun/
-│   │       ├── query_builder.py           # NEW: Enhanced query builder (481 lines)
-│   │       ├── metadata_manager.py        # NEW: Metadata management (444 lines)
-│   │       ├── database_maintenance.py    # NEW: DB maintenance (475 lines)
-│   │       └── __init__.py               # MODIFIED: Added new exports
-│   └── example/
-│       └── tutorial_04_apps.py           # NEW: App tutorial (471 lines)
+│   └── time/
+│       └── syncrules/                     # NEW: SyncRule implementations
+│           ├── __init__.py               # NEW: Package initialization
+│           ├── filefind.py               # NEW: FileFind sync rule (309 lines)
+│           ├── filematch.py              # NEW: FileMatch sync rule (176 lines)
+│           └── commontriggers.py         # NEW: CommonTriggers sync rule (247 lines)
 ├── tests/
-│   ├── test_db_query_builder.py          # NEW: 34 tests
-│   ├── test_db_metadata_manager.py       # NEW: 63 tests
-│   └── test_db_maintenance.py            # NEW: 45 tests
-├── PHASE2_PROGRESS.md                     # MODIFIED: Updated to 100% complete
-└── SESSION_HANDOFF.md                     # MODIFIED: This file
+│   └── test_syncrules.py                 # NEW: 25 comprehensive tests (356 lines)
+├── PHASE3_PLAN.md                        # NEW: 6-week Phase 3 plan (290 lines)
+└── SESSION_HANDOFF.md                    # MODIFIED: This file
 ```
 
 ### Total New Code This Session:
-- **Implementation**: ~3,400 lines
-- **Tests**: ~1,200 lines
-- **Documentation**: ~500 lines
-- **Total**: ~5,100 lines of new code
+- **Implementation**: ~732 lines (syncrules)
+- **Tests**: ~356 lines
+- **Documentation**: ~290 lines (plan)
+- **Total**: ~1,378 lines of new code
 
 ---
 
@@ -115,58 +122,60 @@ ndi-python/
    git log --oneline -5
    ```
 
-2. **Run all Phase 2 tests:**
+2. **Run Phase 3 Week 1 tests:**
    ```bash
-   pytest tests/test_*calculator*.py -v
-   pytest tests/test_probe_specializations.py -v
-   pytest tests/test_phase1_phase2_integration.py -v
-   pytest tests/test_db_query_builder.py -v
+   pytest tests/test_syncrules.py -v
+   # Should show: 25 passed
    ```
 
-3. **Try the new utilities:**
+3. **Try the new sync rules:**
    ```python
-   # Enhanced query builder
-   from ndi.db.fun import QueryBuilder
-   qb = QueryBuilder()
-   query = qb.where('type', '==', 'probe').limit(10).build()
+   from ndi.time.syncrules import FileFind, FileMatch, CommonTriggers
 
-   # Metadata management
-   from ndi.db.fun import MetadataExtractor
-   extractor = MetadataExtractor()
-   metadata = extractor.extract_session_metadata(session)
+   # Create FileFind rule
+   rule = FileFind({
+       'syncfilename': 'syncfile.txt',
+       'daqsystem1': 'intan',
+       'daqsystem2': 'stimulus',
+       'number_fullpath_matches': 1
+   })
 
-   # Database maintenance
-   from ndi.db.fun import DatabaseCleaner, PerformanceMonitor
-   cleaner = DatabaseCleaner(session)
-   monitor = PerformanceMonitor(session)
+   # Create FileMatch rule
+   rule = FileMatch({'number_fullpath_matches': 2})
+
+   # Apply to epoch nodes (returns cost and TimeMapping)
+   cost, mapping = rule.apply(epochnode_a, epochnode_b)
    ```
 
-4. **Review App tutorial:**
+4. **Review Phase 3 plan:**
    ```bash
-   python ndi/example/tutorial_04_apps.py
+   cat PHASE3_PLAN.md
    ```
 
 ---
 
-## 🎯 Phase 3 Planning
+## 🎯 Phase 3 Progress
 
-**Phase 2 is now 100% complete!** Ready to move to Phase 3.
+**Phase 3 Focus**: DAQ System and Time Synchronization (6 weeks total)
 
-**Phase 3 Focus**: DAQ System and Time Synchronization
+**✅ Week 1 Complete: SyncRule Implementations**
+- FileFind, FileMatch, CommonTriggers classes
+- 25 comprehensive tests (100% passing)
+- PHASE3_PLAN.md created
 
-**Components to implement**:
-1. **DAQ System Classes** (4-5 weeks)
-   - Data acquisition interfaces
-   - Device readers and writers
-   - Multi-device synchronization
+**Next Up: Week 2 - SyncGraph Implementation**
+- Graph data structure for sync relationships
+- Graph building from rules
+- Time conversion across clock domains
+- Shortest path algorithms
 
-2. **Time Synchronization** (2-3 weeks)
-   - Clock synchronization framework
-   - Time mapping rules
-   - Timestamp conversion utilities
+**Remaining Weeks**:
+- Week 3: FileNavigator abstraction
+- Week 4: Hardware reader enhancements (Intan, Blackrock)
+- Week 5: System integration
+- Week 6: Testing and documentation
 
-**Estimated Time**: 6-8 weeks
-**Starting Point**: All Phase 1 & 2 infrastructure is ready
+**Progress**: 20% complete (1/6 weeks)
 
 ---
 
@@ -255,17 +264,17 @@ app_docs = session.database.search(query)
 ## 🎉 Accomplishments Summary
 
 **This session completed**:
-- ✅ 3 major database utility modules (~1,400 lines)
-- ✅ App system documentation and examples (~500 lines)
-- ✅ 142 comprehensive tests (~1,200 lines)
-- ✅ Full Phase 2 integration
-- ✅ Updated all documentation to reflect 100% completion
+- ✅ 3 SyncRule implementations (~732 lines)
+- ✅ Comprehensive Phase 3 plan (~290 lines)
+- ✅ 25 comprehensive tests (100% passing)
+- ✅ Fixed method naming and TimeMapping constructor issues
+- ✅ Committed and pushed to remote branch
 
 **Overall NDI Python Port Status**:
 - **Phase 1**: 100% complete ✅
 - **Phase 2**: 100% complete ✅
-- **Phase 3**: Ready to start
-- **Total tests passing**: 206+
+- **Phase 3**: 20% complete (Week 1/6) 🚧
+- **Total tests passing**: 231+
 - **Test pass rate**: ~98%
 
 ---
@@ -274,11 +283,11 @@ app_docs = session.database.search(query)
 
 When you start the next Claude Code session, begin with:
 
-> "I'm continuing the NDI Python port. Phase 2 is now 100% complete! Please read `SESSION_HANDOFF.md` to see what was accomplished. We completed all database utilities (query builder, metadata management, database maintenance) and app system integration. All changes are ready to commit. I'd like to [commit and push this work / start Phase 3 / other task]."
+> "I'm continuing the NDI Python port Phase 3. Please read `SESSION_HANDOFF.md` to understand progress. We just completed Week 1 (SyncRule implementations: FileFind, FileMatch, CommonTriggers) with 25 tests passing. Ready to continue with Week 2: SyncGraph implementation."
 
 ---
 
-**Phase 2 Complete! Ready for Phase 3! 🎉**
+**Phase 3 Week 1 Complete! 🎉**
 
 **Last Updated**: November 17, 2025
-**Next Step**: Commit Phase 2 completion, then start Phase 3 (DAQ System)
+**Next Step**: Week 2 - SyncGraph Implementation (graph building and time conversion)
