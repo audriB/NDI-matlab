@@ -310,7 +310,7 @@ def must_have_required_columns(table: Any, required_cols: Union[str, List[str]])
         elif isinstance(table, dict):
             actual_cols = set(table.keys())
         else:
-            raise ValueError(
+            raise TypeError(
                 'Input table must be a pandas DataFrame or dictionary.'
             )
     except ImportError:
@@ -318,7 +318,7 @@ def must_have_required_columns(table: Any, required_cols: Union[str, List[str]])
         if isinstance(table, dict):
             actual_cols = set(table.keys())
         else:
-            raise ValueError(
+            raise TypeError(
                 'Input table must be a dictionary (or pandas DataFrame if pandas installed).'
             )
 

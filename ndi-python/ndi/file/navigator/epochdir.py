@@ -11,7 +11,8 @@ from pathlib import Path
 from typing import List, Optional, Any
 import glob
 
-from ..navigator import Navigator
+# Import Navigator from _navigator module (renamed to avoid package conflict)
+from .._navigator import Navigator
 
 
 class EpochDir(Navigator):

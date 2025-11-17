@@ -12,7 +12,8 @@ from .validators import (
     must_be_epoch_input,
     must_be_cell_array_of_ndi_sessions,
     must_be_cell_array_of_non_empty_character_arrays,
-    must_be_cell_array_of_class
+    must_be_cell_array_of_class,
+    must_have_required_columns
 )
 
 __all__ = [
@@ -22,5 +23,6 @@ __all__ = [
     'must_be_epoch_input',
     'must_be_cell_array_of_ndi_sessions',
     'must_be_cell_array_of_non_empty_character_arrays',
-    'must_be_cell_array_of_class'
+    'must_be_cell_array_of_class',
+    'must_have_required_columns'
 ]
