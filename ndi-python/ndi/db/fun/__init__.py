@@ -51,6 +51,28 @@ from .plotinteractivedocgraph import (
     plotinteractivedocgraph_from_session
 )
 
+# Enhanced query utilities (Phase 2)
+from .query_builder import (
+    QueryBuilder,
+    QueryCache,
+    combine_queries,
+    optimize_query
+)
+
+# Metadata management utilities (Phase 2)
+from .metadata_manager import (
+    MetadataExtractor,
+    MetadataValidator,
+    MetadataSearcher
+)
+
+# Database maintenance utilities (Phase 2)
+from .database_maintenance import (
+    DatabaseCleaner,
+    PerformanceMonitor,
+    IndexManager
+)
+
 __all__ = [
     # Core utilities
     'docs_from_ids',
@@ -87,4 +109,17 @@ __all__ = [
     # Visualization
     'plotinteractivedocgraph',
     'plotinteractivedocgraph_from_session',
+    # Enhanced query utilities (Phase 2)
+    'QueryBuilder',
+    'QueryCache',
+    'combine_queries',
+    'optimize_query',
+    # Metadata management (Phase 2)
+    'MetadataExtractor',
+    'MetadataValidator',
+    'MetadataSearcher',
+    # Database maintenance (Phase 2)
+    'DatabaseCleaner',
+    'PerformanceMonitor',
+    'IndexManager',
 ]
