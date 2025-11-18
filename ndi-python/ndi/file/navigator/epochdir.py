@@ -158,7 +158,7 @@ class EpochDir(Navigator):
             return []
 
         # Get session path
-        exp_path = self.session.path()
+        exp_path = self.session.path
         if not exp_path or not os.path.exists(exp_path):
             return []
 

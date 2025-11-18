@@ -261,6 +261,28 @@ class Session(DocumentService):
         # Convert to probe objects (would need full implementation)
         return probe_docs
 
+    def add_probe(self, probe) -> 'Session':
+        """
+        Add a probe to the session.
+
+        Args:
+            probe: Probe object to add
+
+        Returns:
+            Session: Self for chaining
+        """
+        # Get the probe's document representation
+        if hasattr(probe, 'document'):
+            doc = probe.document()
+        elif hasattr(probe, 'newdocument'):
+            doc = probe.newdocument()
+        elif isinstance(probe, Document):
+            doc = probe
+        else:
+            raise TypeError(f"Cannot add probe of type {type(probe).__name__}")
+
+        return self.database_add(doc)
+
     def getelements(self, **criteria) -> List:
         """
         Get all elements in the session.

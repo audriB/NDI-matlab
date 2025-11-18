@@ -180,12 +180,12 @@ def download_dataset(
 
     # Import dataset class
     try:
-        from ...dataset.dir import DatasetDir
-        dataset_obj = DatasetDir(reference=None, path=output_path, documents=ndi_documents)
+        from ...dataset import Dir
+        dataset_obj = Dir(reference=None, path=output_path, docs=ndi_documents)
     except ImportError:
-        # If DatasetDir is not available, return the documents list
+        # If Dir is not available, return the documents list
         import warnings
-        warnings.warn('Could not import DatasetDir. Returning documents list instead.')
+        warnings.warn('Could not import Dataset Dir. Returning documents list instead.')
         dataset_obj = ndi_documents
 
     return True, msg, dataset_obj

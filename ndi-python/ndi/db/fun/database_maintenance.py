@@ -147,7 +147,7 @@ class DatabaseCleaner:
             referenced_files.update(files)
 
         # Get all files in the database directory
-        db_path = self.session.path()
+        db_path = self.session.path
         all_files = set()
 
         # Look for binary files (common extensions)
@@ -236,7 +236,7 @@ class DatabaseCleaner:
         }
 
         # Get database path
-        db_path = self.session.path()
+        db_path = self.session.path
 
         # Calculate size before
         stats['before_size'] = self._get_directory_size(db_path)
@@ -331,7 +331,7 @@ class PerformanceMonitor:
         stats['documents_by_type'] = doc_types
 
         # Database size
-        db_path = self.session.path()
+        db_path = self.session.path
         stats['database_size'] = self._get_directory_size(db_path)
 
         # Average query time

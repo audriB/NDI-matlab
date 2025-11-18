@@ -206,7 +206,7 @@ class MetadataExtractor:
         if hasattr(session, 'id'):
             metadata['session_id'] = session.id()
         if hasattr(session, 'path'):
-            metadata['path'] = session.path()
+            metadata['path'] = session.path
 
         # Count documents by type
         if hasattr(session, 'database'):
