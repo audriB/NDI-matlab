@@ -166,7 +166,7 @@ def _mock_ols_search(url):
     parsed = urlparse(url)
     params = parse_qs(parsed.query)
 
-    query = params.get('q', [''])[0].lower()
+    query = params.get('q', [''])[0]
     ontology = params.get('ontology', [''])[0]
     query_fields = params.get('queryFields', [''])[0]
 
@@ -174,13 +174,17 @@ def _mock_ols_search(url):
     results = []
 
     if query_fields == 'obo_id':
-        # ID search - exact match
-        if query in ONTOLOGY_MOCK_DATA:
-            results = [ONTOLOGY_MOCK_DATA[query]]
+        # ID search - match case-insensitively
+        # Try exact match first
+        for key, value in ONTOLOGY_MOCK_DATA.items():
+            if key.upper() == query.upper():
+                results = [value]
+                break
     elif query_fields == 'label':
-        # Label search
-        if query in LABEL_TO_ID_MAP:
-            ontology_id = LABEL_TO_ID_MAP[query]
+        # Label search - case insensitive
+        query_lower = query.lower()
+        if query_lower in LABEL_TO_ID_MAP:
+            ontology_id = LABEL_TO_ID_MAP[query_lower]
             if ontology_id in ONTOLOGY_MOCK_DATA:
                 results = [ONTOLOGY_MOCK_DATA[ontology_id]]
 
