@@ -16,6 +16,8 @@ from .get_active_token import get_active_token
 from .get_token_expiration import get_token_expiration
 from .get_uploaded_document_ids import get_uploaded_document_ids
 from .get_weboptions_with_auth_header import get_weboptions_with_auth_header
+from .list_remote_documents import list_remote_document_ids
+from .list_datasets import list_datasets
 
 __all__ = [
     'get_cloud_dataset_id_for_local_dataset',
@@ -27,4 +29,6 @@ __all__ = [
     'get_token_expiration',
     'get_uploaded_document_ids',
     'get_weboptions_with_auth_header',
+    'list_remote_document_ids',
+    'list_datasets',
 ]

@@ -159,3 +159,35 @@ def delete_document(token: str, dataset_id: str, document_id: str) -> Tuple[bool
 def document_count(token: str, dataset_id: str) -> Tuple[bool, Any, requests.Response, str]:
     """Get document count for a dataset."""
     return DocumentCount(token, dataset_id).execute()
+
+
+class GetBulkDownloadUrl(CloudAPICall):
+    """Request bulk download URL for multiple documents."""
+
+    def __init__(self, token: str, dataset_id: str, document_ids: List[str]):
+        super().__init__()
+        self.token = token
+        self.dataset_id = dataset_id
+        self.document_ids = document_ids
+        self.endpoint_name = 'bulk_download_documents'
+
+    def execute(self) -> Tuple[bool, Any, requests.Response, str]:
+        api_url = self.get_api_url(self.endpoint_name, dataset_id=self.dataset_id)
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.token}'
+        }
+        data = {'documentIds': self.document_ids}
+        response = requests.post(api_url, json=data, headers=headers)
+
+        if response.status_code == 200:
+            return True, response.json(), response, api_url
+        else:
+            return False, response.json() if response.text else response.text, response, api_url
+
+
+def get_bulk_download_url(token: str, dataset_id: str, document_ids: List[str]) -> Tuple[bool, Any, requests.Response, str]:
+    """Convenience function for getting bulk download URL."""
+    api_call = GetBulkDownloadUrl(token, dataset_id, document_ids)
+    return api_call.execute()

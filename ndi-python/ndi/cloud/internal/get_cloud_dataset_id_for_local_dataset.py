@@ -57,10 +57,10 @@ def get_cloud_dataset_id_for_local_dataset(ndi_dataset: 'ndi.dataset') -> Tuple[
     MATLAB Source Reference:
         ndi/+ndi/+cloud/+internal/getCloudDatasetIdForLocalDataset.m
     """
-    from ndi.query import query
+    from ndi.query import Query
 
     # Create a query to find 'dataset_remote' documents
-    cloud_dataset_id_query = query('', isa='dataset_remote')
+    cloud_dataset_id_query = Query('', 'isa', 'dataset_remote')
     cloud_dataset_id_document = ndi_dataset.database_search(cloud_dataset_id_query)
 
     if len(cloud_dataset_id_document) > 1:

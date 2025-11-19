@@ -198,7 +198,10 @@ def upload_document_collection(
 
         while i < doc_count:
             start_index = i
-            end_index = min(i + int(max_document_chunk), doc_count)
+            if max_document_chunk == float('inf'):
+                end_index = doc_count
+            else:
+                end_index = min(i + int(max_document_chunk), doc_count)
 
             # Get chunk of documents
             chunk_docs = document_list[start_index:end_index]

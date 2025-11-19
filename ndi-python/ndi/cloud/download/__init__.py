@@ -12,6 +12,7 @@ from .download_collection import download_document_collection
 from .jsons2documents import jsons_to_documents
 from .dataset_documents import download_dataset_documents
 from .download_dataset_files import download_dataset_files
+from .dataset_dir import DatasetDir
 
 __all__ = [
     'download_dataset',
@@ -19,4 +20,5 @@ __all__ = [
     'jsons_to_documents',
     'download_dataset_documents',
     'download_dataset_files',
+    'DatasetDir',
 ]

@@ -317,7 +317,8 @@ class TestZipForUpload:
                 }
             ]
 
-            with patch('os.path.join', side_effect=lambda *args: os.path.join(*args) if args[0] != mock_database.path else os.path.join(tmpdir, args[-1])), \
+            # Instead of mocking os.path.join globally, mock the database.path attribute
+            with patch.object(mock_database, 'path', tmpdir), \
                  patch('os.path.isfile', return_value=True):
 
                 # Mock the API calls
