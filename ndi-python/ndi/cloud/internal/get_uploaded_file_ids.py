@@ -46,19 +46,16 @@ def get_uploaded_file_ids(dataset_id: str) -> List[str]:
     MATLAB Source Reference:
         ndi/+ndi/+cloud/+internal/getUploadedFileIds.m
     """
-    from ndi.cloud.api.datasets import list_datasets
+    from .list_datasets import list_datasets
 
     try:
         # Get all datasets from the cloud
-        success, _, datasets = list_datasets()
-
-        if not success:
-            raise RuntimeError("Failed to list datasets from cloud")
+        datasets = list_datasets()
 
         # Find the dataset matching the given ID
         dataset = None
         for ds in datasets:
-            if ds.get('id') == dataset_id:
+            if ds.get('id') == dataset_id or ds.get('x_id') == dataset_id:
                 dataset = ds
                 break
 

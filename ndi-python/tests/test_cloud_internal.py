@@ -64,10 +64,10 @@ class TestDecodeJWT:
     def test_decode_jwt_invalid_format(self):
         """Test error handling for invalid JWT format."""
         # Token with wrong number of parts
-        with pytest.raises(ValueError, match="Invalid JWT format"):
+        with pytest.raises(ValueError, match="Invalid JWT"):
             decode_jwt("invalid.token")
 
-        with pytest.raises(ValueError, match="Invalid JWT format"):
+        with pytest.raises(ValueError, match="Invalid JWT"):
             decode_jwt("too.many.parts.here")
 
     def test_decode_jwt_invalid_base64(self):
@@ -75,7 +75,7 @@ class TestDecodeJWT:
         # Create malformed token with invalid base64
         invalid_token = "eyJhbGc.!!!invalid_base64!!!.signature"
 
-        with pytest.raises(ValueError, match="Failed to decode JWT"):
+        with pytest.raises(ValueError, match="Invalid JWT"):
             decode_jwt(invalid_token)
 
     def test_decode_jwt_invalid_json(self):
@@ -87,7 +87,7 @@ class TestDecodeJWT:
 
         token = f"{header_b64}.{payload_b64}.{signature}"
 
-        with pytest.raises(ValueError, match="not valid JSON"):
+        with pytest.raises(ValueError, match="Invalid JWT"):
             decode_jwt(token)
 
     def test_decode_jwt_non_string_input(self):
@@ -172,13 +172,13 @@ class TestGetCloudDatasetIdForLocalDataset:
         mock_dataset = Mock()
         mock_dataset.database_search = Mock(return_value=[])
 
-        with patch('ndi.cloud.internal.get_cloud_dataset_id_for_local_dataset.query') as mock_query:
-            mock_query.return_value = Mock()
+        with patch('ndi.query.Query') as mock_Query:
+            mock_Query.return_value = Mock()
 
             get_cloud_dataset_id_for_local_dataset(mock_dataset)
 
-            # Should query for 'dataset_remote' documents
-            mock_query.assert_called_once_with('', isa='dataset_remote')
+            # Should query for 'dataset_remote' documents using Query class
+            mock_Query.assert_called_once_with('', 'isa', 'dataset_remote')
 
 
 class TestGetTokenExpiration:
@@ -267,8 +267,8 @@ class TestGetUploadedFileIds:
             }
         ]
 
-        with patch('ndi.cloud.internal.get_uploaded_file_ids.list_datasets') as mock_list:
-            mock_list.return_value = (True, None, mock_datasets)
+        with patch('ndi.cloud.internal.list_datasets.list_datasets') as mock_list:
+            mock_list.return_value = mock_datasets
 
             file_ids = get_uploaded_file_ids(dataset_id)
 
@@ -288,8 +288,8 @@ class TestGetUploadedFileIds:
             }
         ]
 
-        with patch('ndi.cloud.internal.get_uploaded_file_ids.list_datasets') as mock_list:
-            mock_list.return_value = (True, None, mock_datasets)
+        with patch('ndi.cloud.internal.list_datasets.list_datasets') as mock_list:
+            mock_list.return_value = mock_datasets
 
             file_ids = get_uploaded_file_ids(dataset_id)
 
@@ -303,8 +303,8 @@ class TestGetUploadedFileIds:
             {'id': 'other_dataset', 'files': []}
         ]
 
-        with patch('ndi.cloud.internal.get_uploaded_file_ids.list_datasets') as mock_list:
-            mock_list.return_value = (True, None, mock_datasets)
+        with patch('ndi.cloud.internal.list_datasets.list_datasets') as mock_list:
+            mock_list.return_value = mock_datasets
 
             with pytest.raises(RuntimeError, match="No dataset found"):
                 get_uploaded_file_ids(dataset_id)
@@ -313,10 +313,10 @@ class TestGetUploadedFileIds:
         """Test error when API call fails."""
         dataset_id = "test_dataset"
 
-        with patch('ndi.cloud.internal.get_uploaded_file_ids.list_datasets') as mock_list:
-            mock_list.return_value = (False, None, [])
+        with patch('ndi.cloud.internal.list_datasets.list_datasets') as mock_list:
+            mock_list.side_effect = RuntimeError("Failed to list datasets from cloud")
 
-            with pytest.raises(RuntimeError, match="Failed to list datasets"):
+            with pytest.raises(RuntimeError, match="Error retrieving dataset"):
                 get_uploaded_file_ids(dataset_id)
 
     def test_get_uploaded_file_ids_no_files_field(self):
@@ -327,8 +327,8 @@ class TestGetUploadedFileIds:
             {'id': dataset_id}  # No 'files' field
         ]
 
-        with patch('ndi.cloud.internal.get_uploaded_file_ids.list_datasets') as mock_list:
-            mock_list.return_value = (True, None, mock_datasets)
+        with patch('ndi.cloud.internal.list_datasets.list_datasets') as mock_list:
+            mock_list.return_value = mock_datasets
 
             file_ids = get_uploaded_file_ids(dataset_id)
 
@@ -338,7 +338,7 @@ class TestGetUploadedFileIds:
         """Test exception handling during retrieval."""
         dataset_id = "test_dataset"
 
-        with patch('ndi.cloud.internal.get_uploaded_file_ids.list_datasets') as mock_list:
+        with patch('ndi.cloud.internal.list_datasets.list_datasets') as mock_list:
             mock_list.side_effect = Exception("Network error")
 
             with pytest.raises(RuntimeError, match="Error retrieving dataset"):

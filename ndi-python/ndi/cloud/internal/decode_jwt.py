@@ -63,9 +63,15 @@ def decode_jwt(jwt_token: str) -> Dict[str, Any]:
     # Try using PyJWT if available (preferred method)
     try:
         import jwt
-        # Decode without verification (matching MATLAB behavior)
-        decoded_payload = jwt.decode(jwt_token, options={"verify_signature": False})
-        return decoded_payload
+        from jwt.exceptions import DecodeError
+
+        try:
+            # Decode without verification (matching MATLAB behavior)
+            decoded_payload = jwt.decode(jwt_token, options={"verify_signature": False})
+            return decoded_payload
+        except DecodeError as e:
+            # Convert PyJWT DecodeError to ValueError for consistent API
+            raise ValueError(f"Invalid JWT token: {str(e)}") from e
     except ImportError:
         # Fall back to manual base64 decoding if PyJWT is not available
         pass

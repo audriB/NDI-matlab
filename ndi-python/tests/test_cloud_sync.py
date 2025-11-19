@@ -91,7 +91,7 @@ class TestSyncMode:
         mock_dataset.path = '/tmp/test_dataset'
         opts = SyncOptions(verbose=False)
 
-        with patch('ndi.cloud.sync.sync_mode.download_new') as mock_download:
+        with patch('ndi.cloud.sync.download_new.download_new') as mock_download:
             SyncMode.DOWNLOAD_NEW.execute(mock_dataset, opts)
             mock_download.assert_called_once()
 
