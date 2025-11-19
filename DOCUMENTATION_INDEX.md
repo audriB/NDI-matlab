@@ -160,6 +160,12 @@ The following documents contained incorrect information and have been removed:
    - ❌ Old handoff document
    - Superseded by: CLOUD_INTEGRATION_HANDOFF.md
 
+6. **NEXT_STEPS_COMPLETION_ROADMAP.md** (deleted)
+   - ❌ Based on incorrect 60-70% feature parity claim
+   - ❌ Claimed Calculator class 44% complete (wrong)
+   - ❌ Estimated 550-650 hours work needed (wrong - actually ~95% done)
+   - Superseded by: CLOUD_INTEGRATION_HANDOFF.md (real remaining work: 42-82 hours)
+
 ---
 
 ## 🎯 Quick Start Guide
