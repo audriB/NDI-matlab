@@ -213,7 +213,14 @@ class MetadataExtractor:
             db = session.database
             if hasattr(db, 'search'):
                 # Count total documents
-                all_docs = db.search({})
+                all_doc_ids = db.alldocids()
+                all_docs = []
+                for doc_id in all_doc_ids:
+                    try:
+                        doc = db.read(doc_id)
+                        all_docs.append(doc)
+                    except Exception:
+                        continue
                 metadata['total_documents'] = len(all_docs)
 
                 # Count by type
@@ -407,7 +414,8 @@ class MetadataSearcher:
         Examples:
             >>> docs = searcher.find_by_type('probe')
         """
-        query = {'element.type': element_type}
+        from ...query import Query
+        query = Query('element.type', 'exact_string', element_type)
         return self.session.database.search(query)
 
     def find_by_app(self, app_name: str) -> List[Any]:
@@ -423,7 +431,8 @@ class MetadataSearcher:
         Examples:
             >>> docs = searcher.find_by_app('spike_extractor')
         """
-        query = {'app.name': app_name}
+        from ...query import Query
+        query = Query('app.name', 'exact_string', app_name)
         return self.session.database.search(query)
 
     def find_recent(self, days: int = 7) -> List[Any]:
@@ -447,7 +456,14 @@ class MetadataSearcher:
         # Search for documents with created date >= cutoff
         # Note: This is a simplified version; actual implementation
         # would depend on database support for date comparisons
-        all_docs = self.session.database.search({})
+        all_doc_ids = self.session.database.alldocids()
+        all_docs = []
+        for doc_id in all_doc_ids:
+            try:
+                doc = self.session.database.read(doc_id)
+                all_docs.append(doc)
+            except Exception:
+                continue
 
         recent = []
         for doc in all_docs:
@@ -475,7 +491,8 @@ class MetadataSearcher:
         Examples:
             >>> docs = searcher.find_by_subject('mouse01')
         """
-        query = {'element.subject_id': subject_id}
+        from ...query import Query
+        query = Query('element.subject_id', 'exact_string', subject_id)
         return self.session.database.search(query)
 
     def find_missing_metadata(self, required_fields: List[str]) -> List[Tuple[Any, List[str]]]:

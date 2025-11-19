@@ -7,7 +7,7 @@ cleanup of orphaned documents, performance monitoring, and optimization.
 MATLAB Equivalent: Various database maintenance patterns in NDI-MATLAB
 """
 
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from datetime import datetime
 import os
 
@@ -70,7 +70,16 @@ class DatabaseCleaner:
         Examples:
             >>> duplicates = cleaner.find_duplicate_documents()
         """
-        all_docs = self.session.database.search({})
+        # Get all documents
+        all_doc_ids = self.session.database.alldocids()
+        all_docs = []
+        for doc_id in all_doc_ids:
+            try:
+                doc = self.session.database.read(doc_id)
+                all_docs.append(doc)
+            except Exception:
+                continue
+
         duplicates = []
 
         # Group documents by their core properties
@@ -316,7 +325,15 @@ class PerformanceMonitor:
         }
 
         # Count documents
-        all_docs = self.session.database.search({})
+        all_doc_ids = self.session.database.alldocids()
+        all_docs = []
+        for doc_id in all_doc_ids:
+            try:
+                doc = self.session.database.read(doc_id)
+                all_docs.append(doc)
+            except Exception as e:
+                # Skip documents that can't be read
+                continue
         stats['total_documents'] = len(all_docs)
 
         # Count by type
@@ -350,24 +367,40 @@ class PerformanceMonitor:
                     total_size += os.path.getsize(file_path)
         return total_size
 
-    def time_query(self, query: Dict[str, Any]) -> Tuple[List[Any], float]:
+    def time_query(self, query: Union[Dict[str, Any], Any] = None) -> Tuple[List[Any], float]:
         """
         Execute a query and measure its time.
 
         Args:
-            query: Query to execute
+            query: Query object or dict (empty dict/None gets all documents)
 
         Returns:
             Tuple of (results, execution_time_seconds)
 
         Examples:
-            >>> results, time_taken = monitor.time_query({'type': 'probe'})
+            >>> from ndi.query import Query
+            >>> q = Query('base.name', 'exact_string', 'probe1')
+            >>> results, time_taken = monitor.time_query(q)
             >>> print(f"Query took {time_taken:.3f} seconds")
         """
         import time
 
         start = time.time()
-        results = self.session.database.search(query)
+
+        # Handle empty dict or None - get all documents
+        if query is None or (isinstance(query, dict) and not query):
+            all_doc_ids = self.session.database.alldocids()
+            results = []
+            for doc_id in all_doc_ids:
+                try:
+                    doc = self.session.database.read(doc_id)
+                    results.append(doc)
+                except Exception:
+                    continue
+        else:
+            # Assume it's a Query object
+            results = self.session.database.search(query)
+
         elapsed = time.time() - start
 
         self.query_times.append(elapsed)
