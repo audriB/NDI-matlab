@@ -54,6 +54,11 @@ class Epoch:
     underlying_epochs: List['Epoch'] = field(default_factory=list)
     underlying_files: List[str] = field(default_factory=list)
 
+    def __post_init__(self):
+        """Validate epoch attributes after initialization."""
+        if self.epoch_number < 0:
+            raise ValueError("epoch_number must be non-negative")
+
     def __repr__(self) -> str:
         """String representation."""
         if self.epoch_id:
