@@ -11,6 +11,7 @@ from ndi.cloud.sync.internal.list_remote_document_ids import list_remote_documen
 from ndi.cloud.sync.internal.download_ndi_documents import download_ndi_documents
 from ndi.cloud.sync.internal.delete_local_documents import delete_local_documents
 from ndi.cloud.sync.internal.index.update_sync_index import update_sync_index
+from ndi.cloud.internal.get_cloud_dataset_id_for_local_dataset import get_cloud_dataset_id_for_local_dataset
 
 if TYPE_CHECKING:
     from ndi.dataset import Dataset
@@ -44,8 +45,6 @@ def mirror_from_remote(ndi_dataset: 'Dataset', **kwargs) -> None:
         ndi.cloud.sync.SyncOptions
         ndi.cloud.sync.SyncMode
     """
-    from ndi.cloud.internal.get_cloud_dataset_id_for_local_dataset import get_cloud_dataset_id_for_local_dataset
-
     sync_options = SyncOptions(**kwargs)
 
     if sync_options.verbose:

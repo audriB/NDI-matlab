@@ -6,6 +6,13 @@ Ported from: ndi.cloud.sync.enum.SyncMode (MATLAB)
 from enum import Enum
 from typing import TYPE_CHECKING
 
+# Import sync functions at module level for testability (allows mocking)
+from ndi.cloud.sync.download_new import download_new
+from ndi.cloud.sync.mirror_from_remote import mirror_from_remote
+from ndi.cloud.sync.upload_new import upload_new
+from ndi.cloud.sync.mirror_to_remote import mirror_to_remote
+from ndi.cloud.sync.two_way_sync import two_way_sync
+
 if TYPE_CHECKING:
     from ndi.dataset import Dataset
     from ndi.cloud.sync.sync_options import SyncOptions
@@ -41,13 +48,7 @@ class SyncMode(Enum):
             ndi_dataset: The local NDI dataset object
             sync_options: Synchronization options
         """
-        # Import here to avoid circular imports
-        from ndi.cloud.sync import (
-            download_new, mirror_from_remote, upload_new,
-            mirror_to_remote, two_way_sync
-        )
-
-        # Map enum values to functions
+        # Map enum values to functions (imported at module level for testability)
         sync_functions = {
             "downloadNew": download_new,
             "mirrorFromRemote": mirror_from_remote,

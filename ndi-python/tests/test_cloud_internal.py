@@ -16,6 +16,18 @@ from ndi.cloud.internal.get_cloud_dataset_id_for_local_dataset import get_cloud_
 from ndi.cloud.internal.get_token_expiration import get_token_expiration
 from ndi.cloud.internal.get_uploaded_file_ids import get_uploaded_file_ids
 
+# Check if PyJWT is available and functional at module load time
+# This avoids Rust panic issues when cryptography is broken
+# First check if the _cffi_backend is available (root cause of the panic)
+_pyjwt_available = False
+try:
+    # Check if cffi backend works first (this is what causes the Rust panic)
+    import _cffi_backend
+    import jwt as _jwt_test
+    _pyjwt_available = True
+except Exception:
+    pass
+
 
 class TestDecodeJWT:
     """Tests for JWT decoding functions."""
@@ -34,20 +46,16 @@ class TestDecodeJWT:
 
         return f"{header_b64}.{payload_b64}.{signature}"
 
+    @pytest.mark.skipif(not _pyjwt_available, reason="PyJWT not available or has dependency issues")
     def test_decode_jwt_with_pyjwt(self):
-        """Test JWT decoding using PyJWT library."""
+        """Test JWT decoding using PyJWT library (if available and functional)."""
         payload = {"sub": "user123", "exp": 1234567890, "name": "Test User"}
         token = self.create_test_jwt(payload)
 
-        try:
-            import jwt
-            # If PyJWT is available, test with it
-            decoded = decode_jwt(token)
-            assert decoded["sub"] == "user123"
-            assert decoded["name"] == "Test User"
-        except ImportError:
-            # PyJWT not available, skip this test
-            pytest.skip("PyJWT not installed")
+        # If PyJWT is available, test with it
+        decoded = decode_jwt(token)
+        assert decoded["sub"] == "user123"
+        assert decoded["name"] == "Test User"
 
     def test_decode_jwt_fallback(self):
         """Test JWT decoding using base64 fallback."""
@@ -63,32 +71,38 @@ class TestDecodeJWT:
 
     def test_decode_jwt_invalid_format(self):
         """Test error handling for invalid JWT format."""
-        # Token with wrong number of parts
-        with pytest.raises(ValueError, match="Invalid JWT format"):
-            decode_jwt("invalid.token")
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            # Token with wrong number of parts
+            with pytest.raises(ValueError, match="Invalid JWT format"):
+                decode_jwt("invalid.token")
 
-        with pytest.raises(ValueError, match="Invalid JWT format"):
-            decode_jwt("too.many.parts.here")
+            with pytest.raises(ValueError, match="Invalid JWT format"):
+                decode_jwt("too.many.parts.here")
 
     def test_decode_jwt_invalid_base64(self):
         """Test error handling for invalid base64 encoding."""
-        # Create malformed token with invalid base64
-        invalid_token = "eyJhbGc.!!!invalid_base64!!!.signature"
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            # Create malformed token with invalid base64
+            invalid_token = "eyJhbGc.!!!invalid_base64!!!.signature"
 
-        with pytest.raises(ValueError, match="Failed to decode JWT"):
-            decode_jwt(invalid_token)
+            with pytest.raises(ValueError, match="Failed to decode JWT"):
+                decode_jwt(invalid_token)
 
     def test_decode_jwt_invalid_json(self):
         """Test error handling for invalid JSON in payload."""
-        # Create token with invalid JSON
-        header_b64 = base64.urlsafe_b64encode(b'{"alg":"HS256"}').decode().rstrip('=')
-        payload_b64 = base64.urlsafe_b64encode(b'{invalid json}').decode().rstrip('=')
-        signature = base64.urlsafe_b64encode(b'sig').decode().rstrip('=')
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            # Create token with invalid JSON
+            header_b64 = base64.urlsafe_b64encode(b'{"alg":"HS256"}').decode().rstrip('=')
+            payload_b64 = base64.urlsafe_b64encode(b'{invalid json}').decode().rstrip('=')
+            signature = base64.urlsafe_b64encode(b'sig').decode().rstrip('=')
 
-        token = f"{header_b64}.{payload_b64}.{signature}"
+            token = f"{header_b64}.{payload_b64}.{signature}"
 
-        with pytest.raises(ValueError, match="not valid JSON"):
-            decode_jwt(token)
+            with pytest.raises(ValueError, match="not valid JSON"):
+                decode_jwt(token)
 
     def test_decode_jwt_non_string_input(self):
         """Test error handling for non-string input."""
@@ -100,31 +114,35 @@ class TestDecodeJWT:
 
     def test_decode_jwt_with_padding(self):
         """Test decoding JWT that needs padding."""
-        # Create payload that will result in base64 needing padding
-        payload = {"data": "x"}  # Short payload
-        token = self.create_test_jwt(payload)
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            # Create payload that will result in base64 needing padding
+            payload = {"data": "x"}  # Short payload
+            token = self.create_test_jwt(payload)
 
-        decoded = decode_jwt(token)
-        assert decoded["data"] == "x"
+            decoded = decode_jwt(token)
+            assert decoded["data"] == "x"
 
     def test_decode_jwt_complex_payload(self):
         """Test decoding JWT with complex payload."""
-        payload = {
-            "sub": "user123",
-            "exp": 1234567890,
-            "iat": 1234567800,
-            "roles": ["admin", "user"],
-            "metadata": {
-                "dataset_id": "abc123",
-                "permissions": ["read", "write"]
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            payload = {
+                "sub": "user123",
+                "exp": 1234567890,
+                "iat": 1234567800,
+                "roles": ["admin", "user"],
+                "metadata": {
+                    "dataset_id": "abc123",
+                    "permissions": ["read", "write"]
+                }
             }
-        }
-        token = self.create_test_jwt(payload)
+            token = self.create_test_jwt(payload)
 
-        decoded = decode_jwt(token)
-        assert decoded["sub"] == "user123"
-        assert decoded["roles"] == ["admin", "user"]
-        assert decoded["metadata"]["dataset_id"] == "abc123"
+            decoded = decode_jwt(token)
+            assert decoded["sub"] == "user123"
+            assert decoded["roles"] == ["admin", "user"]
+            assert decoded["metadata"]["dataset_id"] == "abc123"
 
 
 class TestGetCloudDatasetIdForLocalDataset:
@@ -172,13 +190,13 @@ class TestGetCloudDatasetIdForLocalDataset:
         mock_dataset = Mock()
         mock_dataset.database_search = Mock(return_value=[])
 
-        with patch('ndi.cloud.internal.get_cloud_dataset_id_for_local_dataset.query') as mock_query:
+        with patch('ndi.query.Query') as mock_query:
             mock_query.return_value = Mock()
 
             get_cloud_dataset_id_for_local_dataset(mock_dataset)
 
             # Should query for 'dataset_remote' documents
-            mock_query.assert_called_once_with('', isa='dataset_remote')
+            mock_query.assert_called_once_with('', 'isa', 'dataset_remote')
 
 
 class TestGetTokenExpiration:
@@ -197,52 +215,60 @@ class TestGetTokenExpiration:
 
     def test_get_token_expiration_valid(self):
         """Test extracting expiration from valid token."""
-        # Set expiration to 1 hour from now
-        exp_timestamp = int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp())
-        token = self.create_jwt_with_expiration(exp_timestamp)
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            # Set expiration to 1 hour from now
+            exp_timestamp = int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp())
+            token = self.create_jwt_with_expiration(exp_timestamp)
 
-        exp_time = get_token_expiration(token)
+            exp_time = get_token_expiration(token)
 
-        assert isinstance(exp_time, datetime)
-        assert exp_time.tzinfo is not None  # Should have timezone info
+            assert isinstance(exp_time, datetime)
+            assert exp_time.tzinfo is not None  # Should have timezone info
 
     def test_get_token_expiration_past(self):
         """Test token with past expiration."""
-        # Set expiration to 1 hour ago
-        exp_timestamp = int((datetime.now(timezone.utc) - timedelta(hours=1)).timestamp())
-        token = self.create_jwt_with_expiration(exp_timestamp)
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            # Set expiration to 1 hour ago
+            exp_timestamp = int((datetime.now(timezone.utc) - timedelta(hours=1)).timestamp())
+            token = self.create_jwt_with_expiration(exp_timestamp)
 
-        exp_time = get_token_expiration(token)
+            exp_time = get_token_expiration(token)
 
-        # Should still parse even if expired
-        assert exp_time < datetime.now(timezone.utc)
+            # Should still parse even if expired
+            assert exp_time < datetime.now(timezone.utc)
 
     def test_get_token_expiration_missing_exp(self):
         """Test error when token has no 'exp' claim."""
-        payload = {"sub": "user123"}  # No 'exp' field
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            payload = {"sub": "user123"}  # No 'exp' field
 
-        header = {"alg": "HS256"}
-        header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip('=')
-        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip('=')
-        signature = base64.urlsafe_b64encode(b'sig').decode().rstrip('=')
+            header = {"alg": "HS256"}
+            header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip('=')
+            payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip('=')
+            signature = base64.urlsafe_b64encode(b'sig').decode().rstrip('=')
 
-        token = f"{header_b64}.{payload_b64}.{signature}"
+            token = f"{header_b64}.{payload_b64}.{signature}"
 
-        with pytest.raises(KeyError, match="exp"):
-            get_token_expiration(token)
+            with pytest.raises(KeyError, match="exp"):
+                get_token_expiration(token)
 
     def test_get_token_expiration_timezone_conversion(self):
         """Test that expiration time is converted to local timezone."""
-        exp_timestamp = int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp())
-        token = self.create_jwt_with_expiration(exp_timestamp)
+        # Force fallback mode to avoid jwt import issues
+        with patch.dict('sys.modules', {'jwt': None}):
+            exp_timestamp = int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp())
+            token = self.create_jwt_with_expiration(exp_timestamp)
 
-        exp_time = get_token_expiration(token)
+            exp_time = get_token_expiration(token)
 
-        # Should have timezone info (local timezone)
-        assert exp_time.tzinfo is not None
-        # Should be close to the expected time (within a few seconds)
-        expected = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc).astimezone()
-        assert abs((exp_time - expected).total_seconds()) < 1
+            # Should have timezone info (local timezone)
+            assert exp_time.tzinfo is not None
+            # Should be close to the expected time (within a few seconds)
+            expected = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc).astimezone()
+            assert abs((exp_time - expected).total_seconds()) < 1
 
 
 class TestGetUploadedFileIds:
@@ -375,25 +401,27 @@ def mock_dataset_with_cloud_id():
 
 def test_integration_jwt_decode_and_expiration(sample_jwt_payload):
     """Integration test: decode JWT and extract expiration."""
-    # Create JWT
-    header = {"alg": "HS256", "typ": "JWT"}
-    header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip('=')
-    payload_b64 = base64.urlsafe_b64encode(json.dumps(sample_jwt_payload).encode()).decode().rstrip('=')
-    signature = base64.urlsafe_b64encode(b'sig').decode().rstrip('=')
+    # Force fallback mode to avoid jwt import issues
+    with patch.dict('sys.modules', {'jwt': None}):
+        # Create JWT
+        header = {"alg": "HS256", "typ": "JWT"}
+        header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip('=')
+        payload_b64 = base64.urlsafe_b64encode(json.dumps(sample_jwt_payload).encode()).decode().rstrip('=')
+        signature = base64.urlsafe_b64encode(b'sig').decode().rstrip('=')
 
-    token = f"{header_b64}.{payload_b64}.{signature}"
+        token = f"{header_b64}.{payload_b64}.{signature}"
 
-    # Decode token
-    decoded = decode_jwt(token)
-    assert decoded["sub"] == "user_12345"
-    assert decoded["name"] == "Test User"
+        # Decode token
+        decoded = decode_jwt(token)
+        assert decoded["sub"] == "user_12345"
+        assert decoded["name"] == "Test User"
 
-    # Extract expiration
-    exp_time = get_token_expiration(token)
-    assert isinstance(exp_time, datetime)
+        # Extract expiration
+        exp_time = get_token_expiration(token)
+        assert isinstance(exp_time, datetime)
 
-    # Expiration should be in the future
-    assert exp_time > datetime.now(exp_time.tzinfo)
+        # Expiration should be in the future
+        assert exp_time > datetime.now(exp_time.tzinfo)
 
 
 def test_integration_get_cloud_id_and_files(mock_dataset_with_cloud_id):

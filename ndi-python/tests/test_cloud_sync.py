@@ -235,8 +235,9 @@ class TestMirrorToRemote:
             # Local has doc1; Remote has doc1, doc2
             mock_list_local.return_value = ([Mock()], ['doc1'])
             mock_list_remote.side_effect = [
-                {'ndi_id': ['doc1', 'doc2'], 'api_id': ['api1', 'api2']},  # Initial/After upload
-                {'ndi_id': ['doc1'], 'api_id': ['api1']}  # Final
+                {'ndi_id': ['doc1', 'doc2'], 'api_id': ['api1', 'api2']},  # Initial
+                {'ndi_id': ['doc1', 'doc2'], 'api_id': ['api1', 'api2']},  # After upload (no changes)
+                {'ndi_id': ['doc1'], 'api_id': ['api1']}  # Final (after delete)
             ]
 
             mirror_to_remote(mock_dataset, verbose=False)

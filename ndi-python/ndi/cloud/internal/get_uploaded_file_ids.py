@@ -9,6 +9,8 @@ MATLAB Source: ndi/+ndi/+cloud/+internal/getUploadedFileIds.m
 
 from typing import List
 
+from ndi.cloud.api.datasets import list_datasets
+
 
 def get_uploaded_file_ids(dataset_id: str) -> List[str]:
     """
@@ -46,8 +48,6 @@ def get_uploaded_file_ids(dataset_id: str) -> List[str]:
     MATLAB Source Reference:
         ndi/+ndi/+cloud/+internal/getUploadedFileIds.m
     """
-    from ndi.cloud.api.datasets import list_datasets
-
     try:
         # Get all datasets from the cloud
         success, _, datasets = list_datasets()
