@@ -317,7 +317,9 @@ class TestZipForUpload:
                 }
             ]
 
-            with patch('os.path.join', side_effect=lambda *args: os.path.join(*args) if args[0] != mock_database.path else os.path.join(tmpdir, args[-1])), \
+            # Save original os.path.join before patching to avoid recursion
+            _original_join = os.path.join
+            with patch('os.path.join', side_effect=lambda *args: _original_join(*args) if args[0] != mock_database.path else _original_join(tmpdir, args[-1])), \
                  patch('os.path.isfile', return_value=True):
 
                 # Mock the API calls
