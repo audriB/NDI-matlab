@@ -241,14 +241,14 @@ class TestMetadataSearcher:
         with tempfile.TemporaryDirectory() as tmpdir:
             session = SessionDir(tmpdir, "test_session")
 
-            # Add a probe
+            # Add a probe (ElectrodeProbe has type='electrode')
             probe = ElectrodeProbe(session, 'e1', reference=1,
                                   subject_id='mouse01')
             session.add_probe(probe)
 
-            # Search for probes
+            # Search for electrodes (the actual type for ElectrodeProbe)
             searcher = MetadataSearcher(session)
-            probes = searcher.find_by_type('probe')
+            probes = searcher.find_by_type('electrode')
 
             assert len(probes) > 0
 

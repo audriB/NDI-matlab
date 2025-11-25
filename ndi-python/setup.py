@@ -34,6 +34,8 @@ setup(
         "jsonschema>=4.0.0",
         "python-dateutil>=2.8.0",
         "tinydb>=4.7.0",  # Lightweight NoSQL database
+        "networkx>=2.6.0",  # Graph operations for sync graphs
+        "requests>=2.27.0",  # HTTP requests for cloud API
     ],
     extras_require={
         "dev": [
@@ -44,8 +46,9 @@ setup(
             "mypy>=0.950",
         ],
         "cloud": [
-            "requests>=2.27.0",
             "boto3>=1.20.0",  # AWS S3 support
+            "pyjwt>=2.0.0",  # JWT token handling
+            "cffi>=1.15.0",  # Required for cryptography
         ],
     },
 )

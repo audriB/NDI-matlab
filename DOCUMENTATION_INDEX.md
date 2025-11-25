@@ -1,6 +1,6 @@
 # NDI Python Port - Documentation Index
 
-**Last Updated**: November 19, 2025
+**Last Updated**: November 25, 2025
 
 This document provides a roadmap to all analysis, status, and integration documentation for the NDI MATLAB to Python port.
 
@@ -166,6 +166,12 @@ The following documents contained incorrect information and have been removed:
    - ❌ Estimated 550-650 hours work needed (wrong - actually ~95% done)
    - Superseded by: CLOUD_INTEGRATION_HANDOFF.md (real remaining work: 42-82 hours)
 
+7. **FEATURE_PARITY_EXECUTIVE_SUMMARY.txt** (deleted Nov 25, 2025)
+   - ❌ Claimed 45% feature coverage (wrong - actually ~95%)
+   - ❌ Claimed "NOT PRODUCTION READY" (wrong - core features work)
+   - ❌ Claimed Calculator class 44% complete (wrong - actually 95-100%)
+   - Superseded by: CORRECTED_GAP_ANALYSIS.md
+
 ---
 
 ## 🎯 Quick Start Guide
@@ -214,6 +220,7 @@ The following documents contained incorrect information and have been removed:
 | Nov 19 22:52 | CLOUD_INFRASTRUCTURE_NEEDED.md updated to v2.0 (corrected backend status) |
 | Nov 19 22:57 | CLOUD_INTEGRATION_HANDOFF.md created (complete task breakdown) |
 | Nov 19 23:00 | Documentation cleanup (this index created, outdated docs removed) |
+| Nov 25 | Bug fixes applied to database utilities and documentation cleanup |
 
 ---
 

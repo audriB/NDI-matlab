@@ -526,12 +526,12 @@ class Element(IDO, EpochSet, TimeSeries):
         if self.underlying_element:
             underlying_id = self.underlying_element.id()
 
-        doc = doc.set_dependency_value('underlying_element_id', underlying_id)
-        doc = doc.set_dependency_value('subject_id', self.subject_id or '')
+        doc = doc.set_dependency_value('underlying_element_id', underlying_id, error_if_not_found=False)
+        doc = doc.set_dependency_value('subject_id', self.subject_id or '', error_if_not_found=False)
 
         # Add other dependencies
         for name, value in self.dependencies.items():
-            doc = doc.set_dependency_value(name, value)
+            doc = doc.set_dependency_value(name, value, error_if_not_found=False)
 
         return doc
 

@@ -235,18 +235,18 @@ class MetadataExtractor:
                 metadata['document_types'] = doc_types
 
         # Get probes
-        if hasattr(session, 'get_probes'):
+        if hasattr(session, 'getprobes'):
             try:
-                probes = session.get_probes()
+                probes = session.getprobes()
                 metadata['num_probes'] = len(probes)
                 metadata['probe_names'] = [p.name for p in probes if hasattr(p, 'name')]
             except Exception:
                 pass
 
         # Get epochs
-        if hasattr(session, 'get_epochs'):
+        if hasattr(session, 'getepochs'):
             try:
-                epochs = session.get_epochs()
+                epochs = session.getepochs()
                 metadata['num_epochs'] = len(epochs)
             except Exception:
                 pass
@@ -492,7 +492,9 @@ class MetadataSearcher:
             >>> docs = searcher.find_by_subject('mouse01')
         """
         from ...query import Query
-        query = Query('element.subject_id', 'exact_string', subject_id)
+        # subject_id is stored in the depends_on array, use depends_on query
+        # For depends_on: field='', operation='depends_on', value=dep_name, param=expected_value
+        query = Query('', 'depends_on', 'subject_id', subject_id)
         return self.session.database.search(query)
 
     def find_missing_metadata(self, required_fields: List[str]) -> List[Tuple[Any, List[str]]]:
