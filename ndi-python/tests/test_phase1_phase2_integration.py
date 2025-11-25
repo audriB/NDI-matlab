@@ -47,13 +47,14 @@ class TestPhase1Integration:
         """Test file navigator with epoch organization."""
         from ndi.file.navigator import EpochDir
         from ndi.validators import must_be_text_like
-        from unittest.mock import MagicMock
+        from unittest.mock import MagicMock, PropertyMock
 
         # Create mock session
         session = MagicMock()
         session_path = str(tmp_path / 'test_session')
         Path(session_path).mkdir()
-        session.path.return_value = session_path
+        # Use property mock for session.path (not a method call)
+        type(session).path = PropertyMock(return_value=session_path)
 
         # Create epoch directories
         epochs = ['t00001', 't00002', 't00003']
@@ -257,14 +258,15 @@ class TestPhase1Phase2Combined:
         from ndi.file.navigator import EpochDir
         from ndi.probe import MultiElectrodeProbe
         from ndi.validators import must_be_text_like
-        from unittest.mock import MagicMock
+        from unittest.mock import MagicMock, PropertyMock
 
         # Create session
         session_path = tmp_path / 'multi_probe_session'
         session_path.mkdir()
 
         session = MagicMock()
-        session.path.return_value = str(session_path)
+        # Use property mock for session.path (not a method call)
+        type(session).path = PropertyMock(return_value=str(session_path))
 
         # Create probes
         probe1 = MultiElectrodeProbe(
