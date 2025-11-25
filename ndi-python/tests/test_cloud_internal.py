@@ -16,6 +16,18 @@ from ndi.cloud.internal.get_cloud_dataset_id_for_local_dataset import get_cloud_
 from ndi.cloud.internal.get_token_expiration import get_token_expiration
 from ndi.cloud.internal.get_uploaded_file_ids import get_uploaded_file_ids
 
+# Check if PyJWT is available and functional at module load time
+# This avoids Rust panic issues when cryptography is broken
+# First check if the _cffi_backend is available (root cause of the panic)
+_pyjwt_available = False
+try:
+    # Check if cffi backend works first (this is what causes the Rust panic)
+    import _cffi_backend
+    import jwt as _jwt_test
+    _pyjwt_available = True
+except Exception:
+    pass
+
 
 class TestDecodeJWT:
     """Tests for JWT decoding functions."""
@@ -34,11 +46,9 @@ class TestDecodeJWT:
 
         return f"{header_b64}.{payload_b64}.{signature}"
 
-    @pytest.mark.skip(reason="PyJWT has cryptography dependency issues in this environment")
+    @pytest.mark.skipif(not _pyjwt_available, reason="PyJWT not available or has dependency issues")
     def test_decode_jwt_with_pyjwt(self):
-        """Test JWT decoding using PyJWT library."""
-        import jwt
-
+        """Test JWT decoding using PyJWT library (if available and functional)."""
         payload = {"sub": "user123", "exp": 1234567890, "name": "Test User"}
         token = self.create_test_jwt(payload)
 

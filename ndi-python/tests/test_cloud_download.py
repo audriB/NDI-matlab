@@ -22,7 +22,6 @@ from ndi.cloud.download.dataset_documents import download_dataset_documents
 class TestDownloadDocumentCollection:
     """Tests for download_document_collection function."""
 
-    @pytest.mark.skip(reason="Mock patches need updating for current module structure")
     def test_download_with_document_ids(self):
         """Test downloading specific documents with chunking."""
         dataset_id = "test_dataset_123"
@@ -35,13 +34,17 @@ class TestDownloadDocumentCollection:
             {"document_properties": {"base": {"id": "doc3"}}}
         ]
 
+        # Patch at correct module paths:
+        # - docs_api is imported at module level
+        # - structs_to_ndi_documents is imported at module level
+        # - rehydrate_json_nan_null is imported inside the function from ndi.util.json_utils
         with patch('ndi.cloud.download.download_collection.docs_api.get_bulk_download_url') as mock_get_url, \
              patch('ndi.cloud.download.download_collection.urllib.request.urlretrieve') as mock_retrieve, \
              patch('ndi.cloud.download.download_collection.zipfile.ZipFile') as mock_zip, \
              patch('ndi.cloud.download.download_collection.tempfile.mkdtemp') as mock_mkdtemp, \
              patch('builtins.open', mock_open(read_data=json.dumps(mock_structs))) as mock_file, \
              patch('ndi.cloud.download.download_collection.structs_to_ndi_documents') as mock_convert, \
-             patch('ndi.cloud.download.download_collection.rehydrate_json_nan_null') as mock_rehydrate:
+             patch('ndi.util.json_utils.rehydrate_json_nan_null') as mock_rehydrate:
 
             # Setup mocks
             mock_get_url.return_value = (True, "http://download.url", {})
@@ -71,12 +74,12 @@ class TestDownloadDocumentCollection:
                 assert len(result) == 3
                 assert mock_get_url.call_count == 2  # 3 docs with chunk_size=2 requires 2 chunks
 
-    @pytest.mark.skip(reason="Mock patches need updating for current module structure")
     def test_download_all_documents(self):
         """Test downloading all documents when no IDs provided."""
         dataset_id = "test_dataset_123"
 
-        with patch('ndi.cloud.download.download_collection.list_remote_document_ids') as mock_list_ids, \
+        # list_remote_document_ids is imported inside the function, so patch at source module
+        with patch('ndi.cloud.sync.internal.list_remote_document_ids.list_remote_document_ids') as mock_list_ids, \
              patch('ndi.cloud.download.download_collection.docs_api.get_bulk_download_url') as mock_get_url, \
              patch('ndi.cloud.download.download_collection.urllib.request.urlretrieve'), \
              patch('ndi.cloud.download.download_collection.zipfile.ZipFile') as mock_zip, \
@@ -85,7 +88,7 @@ class TestDownloadDocumentCollection:
              patch('os.listdir', return_value=['docs.json']), \
              patch('os.path.exists', return_value=True), \
              patch('os.remove'), \
-             patch('ndi.cloud.download.download_collection.rehydrate_json_nan_null', return_value='[]'), \
+             patch('ndi.util.json_utils.rehydrate_json_nan_null', return_value='[]'), \
              patch('ndi.cloud.download.download_collection.structs_to_ndi_documents', return_value=[]):
 
             mock_list_ids.return_value = {'apiId': ['api_1', 'api_2'], 'ndi_id': ['ndi_1', 'ndi_2']}
@@ -100,12 +103,12 @@ class TestDownloadDocumentCollection:
 
             mock_list_ids.assert_called_once()
 
-    @pytest.mark.skip(reason="Mock patches need updating for current module structure")
     def test_download_empty_dataset(self):
         """Test downloading from a dataset with no documents."""
         dataset_id = "empty_dataset"
 
-        with patch('ndi.cloud.download.download_collection.list_remote_document_ids') as mock_list_ids:
+        # list_remote_document_ids is imported inside the function, so patch at source module
+        with patch('ndi.cloud.sync.internal.list_remote_document_ids.list_remote_document_ids') as mock_list_ids:
             mock_list_ids.return_value = {'apiId': [], 'ndi_id': []}
 
             result = download_document_collection(dataset_id, document_ids=None, verbose=False)
@@ -238,7 +241,6 @@ class TestJsonsToDocuments:
 class TestDownloadDataset:
     """Tests for download_dataset function."""
 
-    @pytest.mark.skip(reason="Mock patches need updating for current module structure")
     def test_download_dataset_local_mode(self):
         """Test downloading dataset in local mode."""
         dataset_id = "test_dataset"
@@ -254,22 +256,27 @@ class TestDownloadDataset:
             'documents': ['doc1', 'doc2']
         }
 
+        # datasets is imported at module level via from ..api import datasets
+        # files_api is imported inside the function from ..api import files as files_api
+        # urllib is imported inside the function, patch at standard library level
+        # download_dataset_documents and jsons_to_documents are imported at module level
+        # Dir is imported inside the function from ...dataset import Dir
         with patch('os.getenv', return_value='test_token'), \
              patch('os.makedirs'), \
              patch('os.path.isdir', return_value=False), \
              patch('ndi.cloud.download.dataset.datasets.get_dataset') as mock_get_dataset, \
-             patch('ndi.cloud.download.dataset.files_api.get_file_details') as mock_get_file, \
-             patch('ndi.cloud.download.dataset.urllib.request.urlretrieve'), \
+             patch('ndi.cloud.api.files.get_file_details') as mock_get_file, \
+             patch('urllib.request.urlretrieve'), \
              patch('ndi.cloud.download.dataset.download_dataset_documents') as mock_download_docs, \
              patch('ndi.cloud.download.dataset.jsons_to_documents') as mock_jsons, \
-             patch('ndi.cloud.download.dataset.DatasetDir') as mock_dataset_dir, \
+             patch('ndi.dataset.Dir') as mock_dir_class, \
              patch('os.path.isfile', return_value=False):
 
             mock_get_dataset.return_value = (True, mock_dataset, None, None)
             mock_get_file.return_value = (True, {'downloadUrl': 'http://file.url'}, None, None)
             mock_download_docs.return_value = (True, '')
             mock_jsons.return_value = []
-            mock_dataset_dir.return_value = Mock()
+            mock_dir_class.return_value = Mock()
 
             success, msg, dataset = download_dataset(
                 dataset_id,
@@ -281,7 +288,6 @@ class TestDownloadDataset:
             assert success is True
             mock_get_dataset.assert_called_once()
 
-    @pytest.mark.skip(reason="Mock patches need updating for current module structure")
     def test_download_dataset_hybrid_mode(self):
         """Test downloading dataset in hybrid mode (no file downloads)."""
         dataset_id = "test_dataset"
@@ -294,18 +300,19 @@ class TestDownloadDataset:
             'documents': ['doc1']
         }
 
+        # Dir is imported inside the function from ...dataset import Dir
         with patch('os.getenv', return_value='test_token'), \
              patch('os.makedirs'), \
              patch('os.path.isdir', return_value=False), \
              patch('ndi.cloud.download.dataset.datasets.get_dataset') as mock_get_dataset, \
              patch('ndi.cloud.download.dataset.download_dataset_documents') as mock_download_docs, \
              patch('ndi.cloud.download.dataset.jsons_to_documents') as mock_jsons, \
-             patch('ndi.cloud.download.dataset.DatasetDir') as mock_dataset_dir:
+             patch('ndi.dataset.Dir') as mock_dir_class:
 
             mock_get_dataset.return_value = (True, mock_dataset, None, None)
             mock_download_docs.return_value = (True, '')
             mock_jsons.return_value = []
-            mock_dataset_dir.return_value = Mock()
+            mock_dir_class.return_value = Mock()
 
             success, msg, dataset = download_dataset(
                 dataset_id,
@@ -315,6 +322,7 @@ class TestDownloadDataset:
             )
 
             assert success is True
+            mock_get_dataset.assert_called_once()
 
     def test_download_invalid_mode(self):
         """Test error handling for invalid mode."""
