@@ -64,4 +64,14 @@ Van Hooser SD, et al. (2022) NDI: A Platform-Independent Data Interface and Data
 
 ## Development Status
 
-This is an active port of the MATLAB version. API compatibility is maintained where possible, with Pythonic idioms where appropriate.
+This is an active port of the MATLAB version. API compatibility is maintained where possible, with Pythonic idioms where appropriate. 
+
+## Contacts
+
+Steve Van Hooser: steve@walthamdatascience.com (technical inquiries) 
+Audri Bhowmick: audri@walthamdatascience.com (business/partnership inquries) 
+
+
+This codebase and its contents are developed, maintained, and owned by Waltham Data Science LLC 
+ 
+
